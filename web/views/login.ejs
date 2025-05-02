@@ -1,0 +1,100 @@
+<!-- Improved login.ejs template -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - WordPress Automation Platform</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">WordPress Automation</a>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="/login">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card login-card shadow">
+          <div class="card-header bg-primary text-white text-center py-3">
+            <h4><i class="bi bi-lock"></i> Log In</h4>
+          </div>
+          <div class="card-body p-4">
+            <% if (error && error.length > 0) { %>
+              <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <%= error %>
+              </div>
+            <% } %>
+            
+            <% if (success && success.length > 0) { %>
+              <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <%= success %>
+              </div>
+            <% } %>
+            
+            <form action="/login" method="POST">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-key"></i></span>
+                  <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+              </div>
+              
+              <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary py-2">
+                  <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                </button>
+              </div>
+            </form>
+            
+            <div class="text-center mt-4">
+              <p class="mb-0">WordPress Article Automation System</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center text-white mt-3">
+          <p>Don't have an account? <a href="/register" class="text-info">Create one here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer mt-auto py-3 text-center text-white-50">
+    <div class="container">
+      <span>WordPress Automation Platform © 2025</span>
+    </div>
+  </footer>
+  
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

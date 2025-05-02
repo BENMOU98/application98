@@ -1,0 +1,123 @@
+<%- include('partials/header', {page: 'generate'}) %>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+      <div class="card">
+        <div class="card-body py-5">
+          <h2 class="mb-4">Generating Article</h2>
+          
+          <div class="spinner-border text-primary mb-4" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          
+          <h4 class="mb-3">Creating content for: <span class="text-primary"><%= keyword %></span></h4>
+          
+          <p class="text-muted mb-4">Please wait while we generate your article. This process may take a minute or two.</p>
+          
+          <div class="progress mb-4" style="height: 10px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" id="progress-bar" role="progressbar" style="width: 0%"></div>
+          </div>
+          
+          <div id="status-message" class="mb-4">Initializing...</div>
+          
+          <div class="d-none" id="error-container">
+            <div class="alert alert-danger" role="alert">
+              <h5 class="alert-heading">Error Generating Content</h5>
+              <p id="error-message"></p>
+              <hr>
+              <div class="d-flex justify-content-center">
+                <a href="/" class="btn btn-outline-danger me-2">Return to Dashboard</a>
+                <button class="btn btn-danger" id="retry-button">Try Again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.getElementById('progress-bar');
+    const statusMessage = document.getElementById('status-message');
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    const retryButton = document.getElementById('retry-button');
+    
+    // Simulate progress animation
+    let progress = 0;
+    const progressInterval = setInterval(function() {
+      if (progress < 90) {
+        progress += 5;
+        progressBar.style.width = progress + '%';
+        
+        // Update status message based on progress
+        if (progress < 30) {
+          statusMessage.textContent = 'Analyzing keyword and generating ideas...';
+        } else if (progress < 60) {
+          statusMessage.textContent = 'Creating detailed content...';
+        } else {
+          statusMessage.textContent = 'Finalizing article and formatting...';
+        }
+      }
+    }, 1000);
+    
+    // Start content generation
+    generateContent();
+    
+    // Function to generate content
+    function generateContent() {
+      // Call API to generate content
+      fetch('/api/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ keyword: '<%= keyword %>' })
+      })
+      .then(response => response.json())
+      .then(data => {
+        clearInterval(progressInterval);
+        
+        if (data.success) {
+          // Show 100% complete
+          progressBar.style.width = '100%';
+          statusMessage.textContent = 'Article generated successfully! Redirecting to preview...';
+          
+          // Redirect to preview page
+          setTimeout(function() {
+            window.location.href = data.redirect;
+          }, 1000);
+        } else {
+          // Show error
+          showError(data.error);
+        }
+      })
+      .catch(error => {
+        clearInterval(progressInterval);
+        showError(error.message);
+      });
+    }
+    
+    // Function to show error message
+    function showError(message) {
+      errorContainer.classList.remove('d-none');
+      errorMessage.textContent = message;
+      progressBar.classList.add('bg-danger');
+      statusMessage.textContent = 'Failed to generate article';
+    }
+    
+    // Retry button click handler
+    retryButton.addEventListener('click', function() {
+      errorContainer.classList.add('d-none');
+      progressBar.classList.remove('bg-danger');
+      progress = 0;
+      progressBar.style.width = '0%';
+      generateContent();
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

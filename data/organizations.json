@@ -1,0 +1,60 @@
+{
+  "organizations": [
+    {
+      "id": "e475145514960458c1f6ff040e69fcf9",
+      "name": "Default Organization",
+      "adminId": "f9fbf1ad4d6433a9ceefd2a8d801d1e3",
+      "configFile": "config-9f142b4ff64f85754f467ab66973a77c.json",
+      "excelFile": "keywords-0245e022e873f41ea928022e9e415d3b.xlsx",
+      "createdAt": "2025-04-22T15:17:53.083Z"
+    },
+    {
+      "id": "f8209a5793293c31d380a2b1485d5cb4",
+      "name": "mouad ",
+      "adminId": "11fe188fc248a54b76976d64dc8c76b9",
+      "configFile": "config-69c92be5621c40bd0462489de6323172.json",
+      "excelFile": "keywords-a39d45d11ff15dfe3ad41f3efd37659b.xlsx",
+      "createdAt": "2025-04-22T15:20:43.801Z"
+    },
+    {
+      "id": "13f275c7694e5dc8d0ea5dafc1668e12",
+      "name": "hunter-arc",
+      "adminId": "fdec82520d3c15d86368859fbceb17f0",
+      "configFile": "config-6df4e62f91e942b4465dda436e2c2b3d.json",
+      "excelFile": "keywords-a0533c4e9247a22fa74af1b5d5fe8412.xlsx",
+      "createdAt": "2025-04-22T15:26:16.658Z"
+    },
+    {
+      "id": "0f073b963ea1f53f4e8f9a18693dbe27",
+      "name": "abdo",
+      "adminId": "07484f84dbb0d62d27389cbf81ef1d09",
+      "configFile": "config-649cb395d4dca6e41e95940191916576.json",
+      "excelFile": "keywords-eed40b3dd628e5e7a5a10f929eadae8f.xlsx",
+      "createdAt": "2025-04-22T15:29:45.222Z"
+    },
+    {
+      "id": "587ce18b8d37ba8aae65c315e978b83b",
+      "name": "abdo2025",
+      "adminId": "d6c0c1ced9f74621f986b5384b016bbf",
+      "configFile": "config-1e2cd48f681025fb0c069d0bd3e0effc.json",
+      "excelFile": "keywords-e3bea828b4557837613c948ec09d255f.xlsx",
+      "createdAt": "2025-04-22T15:42:23.026Z"
+    },
+    {
+      "id": "aace865329d6f820936482fed9a47eaa",
+      "name": "hunter-arc98",
+      "adminId": "03139104dc0a8084830b3f3877940dff",
+      "configFile": "config-3942d3117a7f5235d2d1b322711ac061.json",
+      "excelFile": "keywords-360e419a321fc55be6abe6132435315a.xlsx",
+      "createdAt": "2025-04-22T16:46:20.387Z"
+    },
+    {
+      "id": "23c6a4b2acc803dfc3a0b01416c2f15a",
+      "name": "papa",
+      "adminId": "40b1ab24c104741af96113bb4b451963",
+      "configFile": "config-2834709ee889c8a6e013aee34010f2fc.json",
+      "excelFile": "keywords-acd36c78c3615f514280700ec3482335.xlsx",
+      "createdAt": "2025-04-22T23:29:25.913Z"
+    }
+  ]
+}

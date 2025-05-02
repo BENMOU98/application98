@@ -1,0 +1,580 @@
+<%- include('partials/header', {page: 'preview'}) %>
+
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-eye"></i> Article Preview</h2>
+        <div>
+          <a href="/" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> Close Preview
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Article</h5>
+            <div>
+              <span class="badge bg-light text-dark">Keyword: <%= keyword %></span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form id="article-form">
+            <input type="hidden" id="keyword" name="keyword" value="<%= keyword %>">
+            
+            <div class="mb-3">
+              <label for="article-title" class="form-label">Article Title</label>
+              <input type="text" class="form-control" id="article-title" name="title" value="<%= article.title %>" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="article-content" class="form-label">Article Content</label>
+              <textarea class="form-control code-editor" id="article-content" name="content" rows="25" required><%= article.content %></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <div>
+                <button type="button" id="regenerate-btn" class="btn btn-warning">
+                  <i class="bi bi-arrow-repeat"></i> Regenerate Content
+                </button>
+              </div>
+              <div>
+                <button type="button" id="save-draft-btn" class="btn btn-secondary me-2">
+                  <i class="bi bi-save"></i> Save as Draft
+                </button>
+                <button type="button" id="publish-btn" class="btn btn-success">
+                  <i class="bi bi-cloud-upload"></i> Publish to WordPress
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <% if (locals.seoMetadata) { %>
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="bi bi-search"></i> SEO Metadata (Rank Math)</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Focus Keyword</label>
+            <p class="p-2 bg-light rounded border"><%= seoMetadata.keyword %></p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">SEO Title</label>
+            <p class="p-2 bg-light rounded border"><%= seoMetadata.title %></p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Meta Description</label>
+            <p class="p-2 bg-light rounded border"><%= seoMetadata.description %></p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Permalink</label>
+            <p class="p-2 bg-light rounded border"><%= seoMetadata.permalink %></p>
+          </div>
+          <div class="mt-3">
+            <button type="button" class="btn btn-outline-primary" id="edit-seo-btn">
+              <i class="bi bi-pencil-square"></i> Edit SEO Metadata
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEO Preview Section -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="bi bi-google"></i> SEO Preview</h5>
+        </div>
+        <div class="card-body">
+          <div class="seo-preview p-3 border rounded bg-light">
+            <h5 class="text-primary mb-1" id="seo-preview-title"></h5>
+            <div class="text-success small mb-2" id="seo-preview-url">recipeelegance.com/<%= seoMetadata.permalink %>/</div>
+            <p class="text-muted mb-0" id="seo-preview-description"><%= seoMetadata.description %></p>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="bi bi-display"></i> Preview</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="article-preview">
+            <h1 id="preview-title" class="mb-4"></h1>
+            <div id="preview-content" class="formatted-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Spinner Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 id="loading-message">Processing your article...</h5>
+        <p class="text-muted" id="loading-subtext">This may take a minute or two.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="success-title">Operation Successful</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3">
+          <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+        </div>
+        <p id="success-message" class="text-center"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmation-title">Confirm Action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="confirmation-message">
+        Are you sure you want to proceed?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirm-action-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Additional styles for proper article formatting */
+.article-preview {
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.article-preview h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #222;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.article-preview h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.article-preview h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.article-preview p {
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+}
+
+.article-preview ul, 
+.article-preview ol {
+  margin-bottom: 1.2rem;
+  padding-left: 2rem;
+}
+
+.article-preview li {
+  margin-bottom: 0.5rem;
+}
+
+.article-preview blockquote {
+  border-left: 4px solid #ddd;
+  padding-left: 1rem;
+  font-style: italic;
+  margin-left: 0;
+  color: #555;
+}
+
+.formatted-content {
+  max-height: 800px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 0.25rem;
+}
+
+/* Code editor styles */
+.code-editor {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* SEO preview styles */
+.seo-preview {
+  font-family: Arial, sans-serif;
+}
+
+.seo-preview h5 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.seo-preview p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-width: 100%;
+}
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const articleTitleInput = document.getElementById('article-title');
+    const articleContentInput = document.getElementById('article-content');
+    const previewTitle = document.getElementById('preview-title');
+    const previewContent = document.getElementById('preview-content');
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    const saveDraftBtn = document.getElementById('save-draft-btn');
+    const publishBtn = document.getElementById('publish-btn');
+    const keywordInput = document.getElementById('keyword');
+    
+    // Modals
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    const confirmActionBtn = document.getElementById('confirm-action-btn');
+    const confirmationTitle = document.getElementById('confirmation-title');
+    const confirmationMessage = document.getElementById('confirmation-message');
+    const successTitle = document.getElementById('success-title');
+    const successMessage = document.getElementById('success-message');
+    
+    // Initialize preview
+    updatePreview();
+    
+    // Update preview when content changes
+    articleTitleInput.addEventListener('input', updatePreview);
+    articleContentInput.addEventListener('input', updatePreview);
+    
+    // Initialize SEO preview
+    updateSeoPreview();
+    
+    // Update SEO preview when title changes
+    articleTitleInput.addEventListener('input', updateSeoPreview);
+    
+    // Function to process SEO template variables
+    function processSeoTemplate(template, articleTitle) {
+      const siteName = 'Recipe Elegance'; // Change to your site name
+      
+      if (!template || typeof template !== 'string') return '';
+      
+      // Replace all template variables
+      return template
+        .replace(/%title%/g, articleTitle || '')
+        .replace(/%sep%/g, ' - ')
+        .replace(/%sitename%/g, siteName);
+    }
+    
+    // Function to update SEO preview
+ // In your updateSeoPreview function:
+function updateSeoPreview() {
+  const articleTitle = document.getElementById('article-title').value;
+  const seoPreviewTitle = document.getElementById('seo-preview-title');
+  
+  if (seoPreviewTitle) {
+    <% if (locals.seoMetadata && locals.seoMetadata.title) { %>
+      // Get original title template
+      const originalTitle = '<%= seoMetadata.title %>';
+      
+      // Use the current article title for processing
+      const processedTitle = processSeoTemplate(originalTitle, articleTitle);
+      
+      // Update the preview
+      seoPreviewTitle.textContent = processedTitle;
+      
+      // Log for debugging
+      console.log('SEO title preview updated:');
+      console.log('Article title:', articleTitle);
+      console.log('SEO template:', originalTitle);
+      console.log('Processed title:', processedTitle);
+    <% } %>
+  }
+}
+    
+    // Regenerate content
+    regenerateBtn.addEventListener('click', function() {
+      confirmationTitle.textContent = 'Regenerate Content';
+      confirmationMessage.textContent = 'This will replace the current content with a newly generated article. Any changes you made will be lost. Do you want to continue?';
+      
+      // Set up confirmation action
+      confirmActionBtn.onclick = function() {
+        confirmationModal.hide();
+        regenerateContent();
+      };
+      
+      confirmationModal.show();
+    });
+    
+    // Save as draft
+    saveDraftBtn.addEventListener('click', function() {
+      publishContent('draft');
+    });
+    
+    // Publish to WordPress
+    publishBtn.addEventListener('click', function() {
+      confirmationTitle.textContent = 'Publish to WordPress';
+      confirmationMessage.textContent = 'This will publish the article to your WordPress site. Are you sure you want to proceed?';
+      
+      // Set up confirmation action
+      confirmActionBtn.onclick = function() {
+        confirmationModal.hide();
+        publishContent('publish');
+      };
+      
+      confirmationModal.show();
+    });
+    
+    <% if (locals.seoMetadata) { %>
+    // Edit SEO metadata button
+    const editSeoBtn = document.getElementById('edit-seo-btn');
+    if (editSeoBtn) {
+      editSeoBtn.addEventListener('click', function() {
+        window.location.href = `/generate-seo/${encodeURIComponent('<%= keyword %>')}/${articleId || 'temp'}`;
+      });
+    }
+    <% } %>
+    
+    // Function to update the preview
+    function updatePreview() {
+      previewTitle.textContent = articleTitleInput.value;
+      
+      // Convert content to HTML with proper formatting
+      const content = articleContentInput.value;
+      previewContent.innerHTML = formatContentForPreview(content);
+    }
+    
+    // Function to format content for preview - IMPROVED VERSION
+    function formatContentForPreview(content) {
+      // Ensure content is a string
+      const contentStr = String(content || '');
+      
+      // First, handle WordPress Gutenberg blocks if present
+      let formattedContent = contentStr
+        .replace(/<!-- wp:heading --><h2>(.*?)<\/h2><!-- \/wp:heading -->/g, '<h2>$1</h2>')
+        .replace(/<!-- wp:heading {"level":3} --><h3>(.*?)<\/h3><!-- \/wp:heading -->/g, '<h3>$1</h3>')
+        .replace(/<!-- wp:paragraph --><p>(.*?)<\/p><!-- \/wp:paragraph -->/g, '<p>$1</p>')
+        .replace(/<!-- wp:list --><ul>([\s\S]*?)<\/ul><!-- \/wp:list -->/g, '<ul>$1</ul>')
+        .replace(/<!-- wp:list {"ordered":true} --><ol>([\s\S]*?)<\/ol><!-- \/wp:list -->/g, '<ol>$1</ol>');
+      
+      // If content isn't in Gutenberg format, try to format plain text with proper HTML structure
+      if (!formattedContent.includes('<h2>') && !formattedContent.includes('<p>')) {
+        // Process headings (assuming headings have ** around them)
+        formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<h2>$1</h2>');
+        
+        // Split by double newlines to create paragraphs
+        const paragraphs = formattedContent.split(/\n\n+/);
+        formattedContent = paragraphs.map(para => {
+          // Skip if it's already an HTML element
+          if (para.trim().startsWith('<') && para.trim().endsWith('>')) {
+            return para;
+          }
+          
+          // Skip empty paragraphs
+          if (para.trim() === '') {
+            return '';
+          }
+          
+          // If it looks like a heading (not already processed)
+          if (para.trim().startsWith('#')) {
+            const level = para.trim().match(/^#+/)[0].length;
+            if (level === 1) {
+              return `<h1>${para.trim().substring(1).trim()}</h1>`;
+            } else if (level === 2) {
+              return `<h2>${para.trim().substring(2).trim()}</h2>`;
+            } else if (level === 3) {
+              return `<h3>${para.trim().substring(3).trim()}</h3>`;
+            }
+          }
+          
+          // Otherwise, make it a paragraph
+          return `<p>${para}</p>`;
+        }).join('\n');
+      }
+      
+      return formattedContent;
+    }
+    
+    // Function to regenerate content
+    function regenerateContent() {
+      const keyword = keywordInput.value;
+      
+      // Show loading modal
+      document.getElementById('loading-message').textContent = 'Regenerating article...';
+      document.getElementById('loading-subtext').textContent = 'This may take a minute or two.';
+      loadingModal.show();
+      
+      // Call API to regenerate content
+      fetch('/api/regenerate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ keyword })
+      })
+      .then(response => response.json())
+      .then(data => {
+        loadingModal.hide();
+        
+        if (data.success) {
+          // Update the form with new content
+          articleTitleInput.value = data.article.title;
+          articleContentInput.value = data.article.content;
+          
+          // Update preview
+          updatePreview();
+          
+          // Update SEO preview
+          updateSeoPreview();
+          
+          // Show success message
+          showAlert('Article regenerated successfully', 'success');
+        } else {
+          showAlert(`Failed to regenerate article: ${data.error}`, 'danger');
+        }
+      })
+      .catch(error => {
+        loadingModal.hide();
+        showAlert(`Error: ${error.message}`, 'danger');
+      });
+    }
+    
+    // Function to publish content
+    function publishContent(status) {
+      // Validate form
+      if (!articleTitleInput.value.trim() || !articleContentInput.value.trim()) {
+        showAlert('Please provide both title and content', 'warning');
+        return;
+      }
+      
+      // Show loading modal
+      document.getElementById('loading-message').textContent = status === 'publish' ? 'Publishing article...' : 'Saving as draft...';
+      document.getElementById('loading-subtext').textContent = 'This may take a moment.';
+      loadingModal.show();
+      
+      // Prepare data - ensure we're sending strings for title and content
+      const articleData = {
+        keyword: keywordInput.value,
+        title: String(articleTitleInput.value.trim()),
+        content: String(articleContentInput.value.trim()),
+        status: status
+      };
+      
+      // Call API to publish content
+      fetch('/api/publish-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(articleData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        loadingModal.hide();
+        
+        if (data.success) {
+          // Show success modal instead of redirecting
+          successTitle.textContent = status === 'publish' ? 'Article Published' : 'Draft Saved';
+          successMessage.textContent = `Your article "${articleTitleInput.value}" has been successfully ${status === 'publish' ? 'published to' : 'saved as a draft on'} WordPress.`;
+          successModal.show();
+          
+          // Add event listener for when success modal is hidden
+          document.getElementById('successModal').addEventListener('hidden.bs.modal', function () {
+            // Redirect to homepage after publishing
+            window.location.href = '/';
+          }, { once: true });
+        } else {
+          showAlert(`Failed to ${status === 'publish' ? 'publish' : 'save'} article: ${data.error}`, 'danger');
+        }
+      })
+      .catch(error => {
+        loadingModal.hide();
+        showAlert(`Error: ${error.message}`, 'danger');
+      });
+    }
+    
+    // Function to show alerts
+    function showAlert(message, type = 'info') {
+      // Create alert container if it doesn't exist
+      let alertContainer = document.querySelector('.alert-container');
+      if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(alertContainer);
+      }
+      
+      // Create alert element
+      const alertEl = document.createElement('div');
+      alertEl.className = `alert alert-${type} alert-dismissible fade show`;
+      alertEl.role = 'alert';
+      alertEl.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      // Add to container
+      alertContainer.appendChild(alertEl);
+      
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        alertEl.classList.remove('show');
+        setTimeout(() => {
+          alertEl.remove();
+        }, 300);
+      }, 5000);
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

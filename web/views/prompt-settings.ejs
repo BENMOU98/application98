@@ -1,0 +1,506 @@
+<%- include('partials/header', {page: 'prompt-settings'}) %>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-square-text"></i> Article Generation Prompts</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">Configure the prompts used for article generation. Customize how your articles are created and formatted.</p>
+                
+                <form id="prompt-settings-form">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Article Generation Method</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="useMultiPartGeneration" name="useMultiPartGeneration" <%= config.prompts.useMultiPartGeneration ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="useMultiPartGeneration">Use Multi-Part Article Generation</label>
+                                    </div>
+                                    <div class="form-text mb-3">
+                                        When enabled, articles will be generated in three parts: introduction, main body, and conclusion. Each part can have its own custom prompt.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="single-prompt-section" class="card mb-4 <%= config.prompts.useMultiPartGeneration ? 'd-none' : '' %>">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Single-Part Generation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="mainPrompt" class="form-label">Main Article Prompt</label>
+                                        <textarea class="form-control" id="mainPrompt" name="mainPrompt" rows="10"><%= config.prompts.mainPrompt || config.app.contentTemplate || 'Write a comprehensive, engaging, and SEO-optimized article about "{keyword}" that follows these guidelines:\n\n1. The article should be at least {minWords} words\n2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that\'s for the title)\n3. Include a compelling introduction that hooks the reader\n4. Break down the topic into logical sections with descriptive headings\n5. Include practical tips, examples, and actionable advice\n6. Add a conclusion that summarizes key points\n7. Optimize for SEO with natural keyword usage\n8. Make the content valuable and informative for the reader' %></textarea>
+                                        <div class="form-text">
+                                            Use {keyword} and {minWords} as placeholders that will be replaced with the actual values.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="multi-part-section" class="card mb-4 <%= config.prompts.useMultiPartGeneration ? '' : 'd-none' %>">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Multi-Part Generation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="part1Prompt" class="form-label">Part 1: Introduction Prompt</label>
+                                        <textarea class="form-control" id="part1Prompt" name="part1Prompt" rows="5"><%= config.prompts.part1Prompt || 'Write an engaging introduction for an article about "{keyword}". The introduction should hook the reader, explain why the topic is important, and preview what the article will cover. Use approximately {minWords} words.' %></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="part2Prompt" class="form-label">Part 2: Main Body Prompt</label>
+                                        <textarea class="form-control" id="part2Prompt" name="part2Prompt" rows="5"><%= config.prompts.part2Prompt || 'Write the main body content for an article about "{keyword}". This should include detailed information, breakdown of the topic into logical sections with appropriate H2 and H3 headings, practical tips, examples, and actionable advice. Use approximately {minWords} words.' %></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="part3Prompt" class="form-label">Part 3: Conclusion Prompt</label>
+                                        <textarea class="form-control" id="part3Prompt" name="part3Prompt" rows="5"><%= config.prompts.part3Prompt || 'Write a conclusion for an article about "{keyword}". The conclusion should summarize the key points, provide final thoughts, and possibly include a call to action. Use approximately {minWords} words.' %></textarea>
+                                    </div>
+                                    <div class="form-text">
+                                        Each part is generated separately and then combined. Use {keyword} and {minWords} as placeholders.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Content Style & SEO Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="toneVoice" class="form-label">Tone & Voice</label>
+                                        <textarea class="form-control" id="toneVoice" name="toneVoice" rows="3"><%= config.prompts.toneVoice || '' %></textarea>
+                                        <div class="form-text">
+                                            Describe the tone and voice to use in the article. Example: "Conversational and friendly, with a touch of humor. Address the reader directly using 'you'."
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="seoGuidelines" class="form-label">SEO Guidelines</label>
+                                        <textarea class="form-control" id="seoGuidelines" name="seoGuidelines" rows="5"><%= config.prompts.seoGuidelines || '' %></textarea>
+                                        <div class="form-text">
+                                            Add specific SEO guidelines for the content. Example: "Use the keyword in the first paragraph. Include LSI keywords like [term1], [term2]. Add 3-5 subheadings with keywords. Aim for a 2% keyword density."
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="thingsToAvoid" class="form-label">Things to Avoid</label>
+                                        <textarea class="form-control" id="thingsToAvoid" name="thingsToAvoid" rows="5"><%= config.prompts.thingsToAvoid || '' %></textarea>
+                                        <div class="form-text">
+                                            Specify things to avoid in the content. Example: "Avoid jargon that beginners won't understand. Don't use passive voice. Avoid recommending specific branded products."
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Article Format Structure section -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Article Format Structure</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Define the structure and format that ChatGPT should follow when generating your articles.
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="articleFormat" class="form-label">Article Format Instructions</label>
+                                        <textarea 
+                                            class="form-control" 
+                                            id="articleFormat" 
+                                            name="articleFormat" 
+                                            rows="8"
+                                            placeholder="Example:
+1. Start with an engaging introduction
+2. Include 5 H2 headings with relevant subheadings
+3. Add a FAQ section with 5 questions and answers
+4. For recipe articles, include Ingredients and Instructions sections
+5. Conclude with a summary paragraph"
+                                        ><%= config.prompts && config.prompts.articleFormat ? config.prompts.articleFormat : '' %></textarea>
+                                        <div class="form-text">
+                                            Provide specific instructions for the article structure, sections, and formatting requirements.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="useArticleFormat" name="useArticleFormat"
+                                            <%= config.prompts && config.prompts.useArticleFormat ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="useArticleFormat">Apply this format to all generated articles</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="formatPresets" class="form-label">Quick Presets</label>
+                                        <select class="form-select" id="formatPresets">
+                                            <option value="">-- Select a preset --</option>
+                                            <option value="blog">Standard Blog Post</option>
+                                            <option value="recipe">Recipe Article</option>
+                                            <option value="howto">How-To Guide</option>
+                                            <option value="listicle">List Article</option>
+                                            <option value="review">Product Review</option>
+                                        </select>
+                                        <div class="form-text">Choose a preset format or customize your own above.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recipe Integration section -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="bi bi-cup-hot"></i> Recipe Integration</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Configure recipe detection and automatic Tasty Recipes plugin integration.
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="enableRecipeDetection" name="enableRecipeDetection" 
+                                            <%= config.prompts && config.prompts.enableRecipeDetection ? 'checked' : '' %>>
+                                            <label class="form-check-label" for="enableRecipeDetection">Enable automatic recipe detection</label>
+                                        </div>
+                                        <div class="form-text">
+                                            When enabled, the system will analyze food-related articles and extract recipe data for the Tasty Recipes plugin.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="recipeFormatPrompt" class="form-label">Recipe Format Instructions</label>
+                                        <textarea class="form-control" id="recipeFormatPrompt" name="recipeFormatPrompt" rows="7" 
+                                            placeholder="Instructions for how recipe content should be structured"><%= config.prompts && config.prompts.recipeFormatPrompt ? config.prompts.recipeFormatPrompt : 'Please format this as a recipe article with the following sections:\n1. A brief introduction about the dish\n2. A "Ingredients" section with a clear, bulleted list (<ul><li>) of all ingredients with quantities\n3. A "Instructions" section with numbered steps (<ol><li>) for preparation\n4. Include preparation time, cooking time, and servings information clearly labeled (e.g., "Prep Time: 15 minutes")\n5. Add a "Tips and Notes" section with helpful advice for making this recipe\n6. If relevant, include nutrition information' %></textarea>
+                                        <div class="form-text">
+                                            Instructions on how recipe articles should be structured to ensure proper extraction of ingredients, instructions, and other recipe data.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-outline-secondary me-2" id="test-prompt-btn">
+                            <i class="bi bi-lightning"></i> Test Prompts
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Prompt Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Prompt Modal -->
+<div class="modal fade" id="testPromptModal" tabindex="-1" aria-labelledby="testPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="testPromptModalLabel">Test Prompt Generation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="testKeyword" class="form-label">Test Keyword</label>
+                    <input type="text" class="form-control" id="testKeyword" placeholder="Enter a keyword to test">
+                </div>
+                
+                <div id="testPromptSpinner" class="text-center mb-3 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Testing...</span>
+                    </div>
+                    <p class="mt-2">Generating sample content...</p>
+                </div>
+                
+                <div id="testPromptResult" class="d-none">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Generated Sample</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-2">Title:</h6>
+                            <p id="testPromptTitle" class="bg-light p-2 rounded"></p>
+                            
+                            <h6 class="mb-2">Content Preview:</h6>
+                            <div id="testPromptContent" class="bg-light p-2 rounded" style="max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="runTestPromptBtn">Test Generation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle between single part and multi-part sections
+        const useMultiPartGeneration = document.getElementById('useMultiPartGeneration');
+        const singlePromptSection = document.getElementById('single-prompt-section');
+        const multiPartSection = document.getElementById('multi-part-section');
+        
+        useMultiPartGeneration.addEventListener('change', function() {
+            if (this.checked) {
+                singlePromptSection.classList.add('d-none');
+                multiPartSection.classList.remove('d-none');
+            } else {
+                singlePromptSection.classList.remove('d-none');
+                multiPartSection.classList.add('d-none');
+            }
+        });
+        
+        // Handle recipe detection toggle
+        document.getElementById('enableRecipeDetection').addEventListener('change', function() {
+            const recipeFormatPrompt = document.getElementById('recipeFormatPrompt');
+            
+            if (!this.checked) {
+                // Disable related fields if recipe detection is turned off
+                recipeFormatPrompt.disabled = true;
+            } else {
+                // Enable related fields when recipe detection is on
+                recipeFormatPrompt.disabled = false;
+            }
+        });
+        
+        // Initial state based on checkbox
+        const enableRecipeDetection = document.getElementById('enableRecipeDetection');
+        if (enableRecipeDetection) {
+            const isEnabled = enableRecipeDetection.checked;
+            const recipeFormatPrompt = document.getElementById('recipeFormatPrompt');
+            
+            if (recipeFormatPrompt) recipeFormatPrompt.disabled = !isEnabled;
+        }
+        
+        // Form submission
+        document.getElementById('prompt-settings-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                useMultiPartGeneration: document.getElementById('useMultiPartGeneration').checked,
+                mainPrompt: document.getElementById('mainPrompt').value,
+                part1Prompt: document.getElementById('part1Prompt').value,
+                part2Prompt: document.getElementById('part2Prompt').value,
+                part3Prompt: document.getElementById('part3Prompt').value,
+                toneVoice: document.getElementById('toneVoice').value,
+                seoGuidelines: document.getElementById('seoGuidelines').value,
+                thingsToAvoid: document.getElementById('thingsToAvoid').value,
+                // Article format fields
+                articleFormat: document.getElementById('articleFormat').value,
+                useArticleFormat: document.getElementById('useArticleFormat').checked,
+                // Recipe detection settings
+                enableRecipeDetection: document.getElementById('enableRecipeDetection').checked,
+                recipeFormatPrompt: document.getElementById('recipeFormatPrompt').value
+            };
+            
+            // Save prompt settings
+            fetch('/api/save-prompt-settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Prompt settings saved successfully!', 'success');
+                } else {
+                    showAlert(`Failed to save prompt settings: ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert(`Error saving prompt settings: ${error.message}`, 'danger');
+            });
+        });
+        
+        // Test prompt button click
+        document.getElementById('test-prompt-btn').addEventListener('click', function() {
+            const testPromptModal = new bootstrap.Modal(document.getElementById('testPromptModal'));
+            testPromptModal.show();
+        });
+        
+        // Run test prompt generation
+        document.getElementById('runTestPromptBtn').addEventListener('click', function() {
+            const testKeyword = document.getElementById('testKeyword').value.trim();
+            
+            if (!testKeyword) {
+                showAlert('Please enter a keyword to test', 'warning');
+                return;
+            }
+            
+            const testPromptSpinner = document.getElementById('testPromptSpinner');
+            const testPromptResult = document.getElementById('testPromptResult');
+            const testPromptTitle = document.getElementById('testPromptTitle');
+            const testPromptContent = document.getElementById('testPromptContent');
+            
+            // Show spinner, hide result
+            testPromptSpinner.classList.remove('d-none');
+            testPromptResult.classList.add('d-none');
+            
+            // Collect current prompt settings
+            const promptSettings = {
+                useMultiPartGeneration: document.getElementById('useMultiPartGeneration').checked,
+                mainPrompt: document.getElementById('mainPrompt').value,
+                part1Prompt: document.getElementById('part1Prompt').value,
+                part2Prompt: document.getElementById('part2Prompt').value,
+                part3Prompt: document.getElementById('part3Prompt').value,
+                toneVoice: document.getElementById('toneVoice').value,
+                seoGuidelines: document.getElementById('seoGuidelines').value,
+                thingsToAvoid: document.getElementById('thingsToAvoid').value,
+                // Article format fields
+                articleFormat: document.getElementById('articleFormat').value,
+                useArticleFormat: document.getElementById('useArticleFormat').checked,
+                // Recipe detection settings
+                enableRecipeDetection: document.getElementById('enableRecipeDetection').checked,
+                recipeFormatPrompt: document.getElementById('recipeFormatPrompt').value
+            };
+            
+            // Call API to test generation
+            fetch('/api/test-prompt-generation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    keyword: testKeyword,
+                    promptSettings: promptSettings
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                testPromptSpinner.classList.add('d-none');
+                
+                if (data.success) {
+                    testPromptResult.classList.remove('d-none');
+                    testPromptTitle.textContent = data.article.title;
+                    
+                    // Get first 500 characters as preview
+                    const contentPreview = data.article.content.substring(0, 500) + '...';
+                    testPromptContent.textContent = contentPreview;
+                } else {
+                    showAlert(`Test generation failed: ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                testPromptSpinner.classList.add('d-none');
+                showAlert(`Error testing generation: ${error.message}`, 'danger');
+            });
+        });
+        
+        // Handle format presets
+        document.getElementById('formatPresets').addEventListener('change', function() {
+            const formatField = document.getElementById('articleFormat');
+            const useFormatCheckbox = document.getElementById('useArticleFormat');
+            const presetValue = this.value;
+            
+            if (presetValue) {
+                // Enable the format checkbox when a preset is selected
+                useFormatCheckbox.checked = true;
+                
+                // Set the content based on the selected preset
+                switch (presetValue) {
+                    case 'blog':
+                        formatField.value = `Create a blog post with the following structure:
+1. Start with an engaging introduction (2-3 paragraphs)
+2. Include 3-5 main sections with H2 headings
+3. Each section should have 2-4 paragraphs
+4. Use relevant subheadings (H3) where appropriate
+5. Include a bullet list of key points in at least one section
+6. End with a conclusion that summarizes the main points
+7. Add a call-to-action in the final paragraph`;
+                        break;
+                        
+                    case 'recipe':
+                        formatField.value = `Create a recipe article with the following structure:
+1. Begin with a brief story or introduction about the dish (2 paragraphs)
+2. Include a "Why You'll Love This Recipe" section with 4-5 bullet points
+3. Add a "Ingredients" section with a clear, bulleted list of all ingredients with quantities
+4. Create a "Instructions" section with numbered steps
+5. Include a "Tips for Success" section with 3-5 useful tips
+6. Add a "Variations" section suggesting modifications or alternatives
+7. End with a "Storage Instructions" section
+8. Conclude with a brief summary paragraph`;
+                        break;
+                        
+                    case 'howto':
+                        formatField.value = `Create a detailed how-to guide with the following structure:
+1. Introduction explaining what the guide will teach and why it's valuable (2 paragraphs)
+2. "What You'll Need" section listing all required tools, materials, or resources
+3. "Preparation" section if applicable
+4. Step-by-step instructions, with each major step as an H2 heading
+   - Break down complex steps into bullet points or numbered sub-steps
+   - Include specific details, measurements, or timing information
+5. "Troubleshooting" section addressing common problems and solutions
+6. "Tips and Tricks" section with expert advice
+7. Conclusion summarizing the process and expected results`;
+                        break;
+                        
+                    case 'listicle':
+                        formatField.value = `Create a list-based article with the following structure:
+1. Introduction explaining the topic and why these items/points are important (2 paragraphs)
+2. List of items, with each item as an H2 heading (number each heading: "1. First Item", etc.)
+3. Each item should include:
+   - 2-3 paragraphs of description/explanation
+   - At least one specific example, statistic, or quote if applicable
+   - A key takeaway or actionable tip
+4. Conclusion that summarizes the list and provides final thoughts
+5. Use numbered subheadings throughout the article`;
+                        break;
+                        
+                    case 'review':
+                        formatField.value = `Create a product review article with the following structure:
+1. Introduction to the product and what it claims to do (2 paragraphs)
+2. "Specifications" section with key product details in a bullet list
+3. "Pros" section with bullet points highlighting the strengths
+4. "Cons" section with bullet points noting the weaknesses
+5. "Performance" section with detailed analysis (2-3 paragraphs)
+6. "Comparison" section that briefly compares it to alternatives
+7. "Value for Money" section assessing if it's worth the price
+8. "Verdict" section with final rating and recommendation
+9. Include a clear numerical or star rating`;
+                        break;
+                }
+            }
+        });
+        
+        // Function to show alerts
+        function showAlert(message, type = 'info') {
+            // Create alert container if it doesn't exist
+            let alertContainer = document.querySelector('.alert-container');
+            if (!alertContainer) {
+                alertContainer = document.createElement('div');
+                alertContainer.className = 'alert-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(alertContainer);
+            }
+            
+            // Create alert element
+            const alertEl = document.createElement('div');
+            alertEl.className = `alert alert-${type} alert-dismissible fade show`;
+            alertEl.role = 'alert';
+            alertEl.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add to container
+            alertContainer.appendChild(alertEl);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertEl.classList.remove('show');
+                setTimeout(() => {
+                    alertEl.remove();
+                }, 300);
+            }, 5000);
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

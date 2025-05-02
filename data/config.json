@@ -1,0 +1,53 @@
+{
+  "wordpress": {
+    "apiUrl": "https://website.com//wp-json/wp/v2",
+    "username": "USERNAME",
+    "password": "password"
+  },
+  "openai": {
+    "apiKey": "YOUR_OPENAI_API_KEY",
+    "model": "gpt-3.5-turbo",
+    "temperature": 0.7,
+    "maxTokens": 3500
+  },
+  "app": {
+    "excelFile": "keywords.xlsx",
+    "keywordColumn": "Keyword",
+    "minWords": 200,
+    "publishStatus": "draft",
+    "delayBetweenPosts": 5000,
+    "contentTemplate": "Write a comprehensive, engaging, and SEO-optimized article about \"{keyword}\" that follows these guidelines:\n\n1. The article should be at least {minWords} words\n2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that's for the title)\n3. Include a compelling introduction that hooks the reader\n4. Break down the topic into logical sections with descriptive headings\n5. Include practical tips, examples, and actionable advice\n6. Add a conclusion that summarizes key points\n7. Optimize for SEO with natural keyword usage\n8. Make the content valuable and informative for the reader"
+  },
+  "prompts": {
+    "useMultiPartGeneration": false,
+    "mainPrompt": "",
+    "part1Prompt": "Write an engaging introduction for an article about \"{keyword}\". The introduction should hook the reader, explain why the topic is important, and preview what the article will cover. Use approximately {minWords} words.",
+    "part2Prompt": "Write the main body content for an article about \"{keyword}\". This should include detailed information, breakdown of the topic into logical sections with appropriate H2 and H3 headings, practical tips, examples, and actionable advice. Use approximately {minWords} words.",
+    "part3Prompt": "Write a conclusion for an article about \"{keyword}\". The conclusion should summarize the key points, provide final thoughts, and possibly include a call to action. Use approximately {minWords} words.",
+    "toneVoice": "",
+    "seoGuidelines": "",
+    "thingsToAvoid": "",
+    "articleFormat": "",
+    "useArticleFormat": false,
+    "useCustomRecipePrompt": true,
+    "recipePromptTemplate": "Generate a complete recipe related to \"{keyword}\".\n\nI need the recipe formatted in this EXACT structure:\n\n**Ingredients**\n**  **\n* [ingredient 1]\n* [ingredient 2]\n* [ingredient 3]\n...\n\n**Instructions**\n** **\n**Step 1: [Step Title]**\n1- [First instruction for this step]\n2- [Second instruction for this step]\n3- [Third instruction for this step]\n\n**Step 2: [Step Title]**\n1- [First instruction for this step]\n2- [Second instruction for this step]\n...\n\n**Step 3: [Step Title]**\n...\n\nInclude detailed ingredients with quantities and measurements.\nGroup instructions under meaningful step titles (Prepare, Mix, Cook, etc).\nNumber each instruction within each step.\n\nFormat the response as a structured JSON object with the following fields:\n{\n  \"title\": \"Recipe title\",\n  \"ingredients\": [\"ingredient 1 with quantity\", \"ingredient 2 with quantity\", ...],\n  \"instructions\": [\"step 1 instruction\", \"step 2 instruction\", ...],\n  \"prep_time\": \"XX mins\",\n  \"cook_time\": \"XX mins\", \n  \"yield\": \"X servings\",\n  \"notes\": [\"note 1\", \"note 2\", ...],\n  \"nutrition_info\": {\n    \"Calories\": \"XXX kcal\",\n    \"Protein\": \"XXg\",\n    \"Carbs\": \"XXg\", \n    \"Fat\": \"XXg\"\n  }\n}"
+  },
+  "recipeDelight": {
+    "enabled": false,
+    "apiKey": ""
+  },
+  "recipe": {
+    "enabled": true,
+    "useWPRM": true,
+    "addToAllKeywords": false,
+    "keywords": ""
+  },
+  "wpRecipeMaker": {
+    "enabled": true,
+    "customRecipeFormat": {
+      "enabled": true,
+      "useFixedTemplate": true,
+      "customTemplate": "**Ingredients**\n**  **\n* [ingredient 1]\n* [ingredient 2]\n* [ingredient 3]\n...\n\n**Instructions**\n** **\n**Step 1: [Step Title]**\n1- [First instruction for this step]\n2- [Second instruction for this step]\n3- [Third instruction for this step]\n\n**Step 2: [Step Title]**\n1- [First instruction for this step]\n2- [Second instruction for this step]\n...\n\n**Step 3: [Step Title]**\n..."
+    }
+  }
+}

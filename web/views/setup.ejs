@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Automation - Initial Setup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 40px;
+        }
+        .setup-card {
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .form-text {
+            font-size: 0.85rem;
+        }
+        .setup-heading {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .step-indicator {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+        }
+        .step.active {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .step:not(:last-child):after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translate(50%, -50%);
+            width: 100%;
+            height: 2px;
+            background-color: #dee2e6;
+            z-index: 1;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            margin-right: 8px;
+            font-weight: normal;
+            z-index: 2;
+            position: relative;
+        }
+        .step.active .step-number {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+        .step.completed .step-number {
+            background-color: #198754;
+            color: white;
+            border-color: #198754;
+        }
+        .step-form {
+            display: none;
+        }
+        .step-form.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="setup-heading">
+            <h1>WordPress Automation</h1>
+            <p class="lead">Initial Setup</p>
+        </div>
+        
+        <div class="card setup-card">
+            <div class="card-body p-4">
+                <% if (error) { %>
+                <div class="alert alert-danger">
+                    <%= error %>
+                </div>
+                <% } %>
+                
+                <div class="step-indicator">
+                    <div class="step active" id="step1-indicator">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Welcome</span>
+                    </div>
+                    <div class="step" id="step2-indicator">
+                        <span class="step-number">2</span>
+                        <span class="step-label">WordPress</span>
+                    </div>
+                    <div class="step" id="step3-indicator">
+                        <span class="step-number">3</span>
+                        <span class="step-label">OpenAI</span>
+                    </div>
+                    <div class="step" id="step4-indicator">
+                        <span class="step-number">4</span>
+                        <span class="step-label">Complete</span>
+                    </div>
+                </div>
+                
+                <form id="setup-form" method="post" action="/complete-setup">
+                    
+                    <!-- Step 1: Welcome -->
+                    <div class="step-form active" id="step1">
+                        <h3 class="mb-4">Welcome to WordPress Automation</h3>
+                        <div class="alert alert-info">
+                            <p><strong>Thank you for installing WordPress Automation!</strong></p>
+                            <p>This quick setup wizard will help you configure the essential settings to get started with automated content generation and publishing.</p>
+                            <p class="mb-0">You'll need:</p>
+                            <ul>
+                                <li>WordPress site details (API URL, username, password)</li>
+                                <li>OpenAI API key for content generation</li>
+                            </ul>
+                        </div>
+                        <p>Let's get started with configuring your application.</p>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <div></div>
+                            <button type="button" class="btn btn-primary next-step">Next: WordPress Configuration <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: WordPress Configuration -->
+                    <div class="step-form" id="step2">
+                        <h3 class="mb-4">WordPress Configuration</h3>
+                        
+                        <div class="mb-3">
+                            <label for="wpApiUrl" class="form-label">WordPress API URL</label>
+                            <input type="text" class="form-control" id="wpApiUrl" name="wordpress[apiUrl]" required>
+                            <div class="form-text">Example: https://yourdomain.com/wp-json/wp/v2</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="wpUsername" class="form-label">WordPress Username</label>
+                            <input type="text" class="form-control" id="wpUsername" name="wordpress[username]" required>
+                            <div class="form-text">Your WordPress admin username</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="wpPassword" class="form-label">WordPress Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="wpPassword" name="wordpress[password]" required>
+                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="wpPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Your WordPress admin password or application password</div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i> For security, it's recommended to create an Application Password in WordPress specifically for this application.
+                        </div>
+                        
+                        <div class="mt-4 test-connection-results d-none">
+                            <!-- Connection test results will be displayed here -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Back</button>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2 test-wordpress-btn">
+                                    <i class="bi bi-link"></i> Test Connection
+                                </button>
+                                <button type="button" class="btn btn-primary next-step">Next: OpenAI Configuration <i class="bi bi-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: OpenAI Configuration -->
+                    <div class="step-form" id="step3">
+                        <h3 class="mb-4">OpenAI Configuration</h3>
+                        
+                        <div class="mb-3">
+                            <label for="openaiApiKey" class="form-label">OpenAI API Key</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="openaiApiKey" name="openai[apiKey]" required>
+                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="openaiApiKey">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Your OpenAI API key for content generation</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="openaiModel" class="form-label">OpenAI Model</label>
+                            <select class="form-select" id="openaiModel" name="openai[model]">
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Faster, more economical)</option>
+                                <option value="gpt-4">GPT-4 (Higher quality, more expensive)</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo (Newest version, if available)</option>
+                            </select>
+                            <div class="form-text">Select the OpenAI model to use</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Article Length</label>
+                            <select class="form-select" id="minWords" name="app[minWords]">
+                                <option value="500">Short (500+ words)</option>
+                                <option value="800" selected>Medium (800+ words)</option>
+                                <option value="1200">Long (1200+ words)</option>
+                                <option value="2000">Extra Long (2000+ words)</option>
+                            </select>
+                            <div class="form-text">Minimum word count for generated articles</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Publish Status</label>
+                            <select class="form-select" id="publishStatus" name="app[publishStatus]">
+                                <option value="draft" selected>Draft (Recommended for review before publishing)</option>
+                                <option value="publish">Published (Immediately live on your site)</option>
+                            </select>
+                            <div class="form-text">How articles will be published to WordPress</div>
+                        </div>
+                        
+                        <div class="mt-4 test-openai-results d-none">
+                            <!-- OpenAI test results will be displayed here -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Back</button>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary me-2 test-openai-btn">
+                                    <i class="bi bi-robot"></i> Test OpenAI API
+                                </button>
+                                <button type="button" class="btn btn-primary next-step">Next: Complete Setup <i class="bi bi-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Complete -->
+                    <div class="step-form" id="step4">
+                        <h3 class="mb-4">Setup Complete</h3>
+                        
+                        <div class="alert alert-success">
+                            <p><strong><i class="bi bi-check-circle"></i> All set!</strong></p>
+                            <p>You've successfully configured the essential settings for WordPress Automation.</p>
+                        </div>
+                        
+                        <p>Additional settings can be configured from the Settings page after login.</p>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary prev-step"><i class="bi bi-arrow-left"></i> Back</button>
+                            <button type="submit" class="btn btn-success">Complete Setup & Log In <i class="bi bi-box-arrow-in-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden fields for OpenAI default values -->
+                    <input type="hidden" name="openai[temperature]" value="0.7">
+                    <input type="hidden" name="openai[maxTokens]" value="3500">
+                    
+                    <!-- Hidden fields for App default values -->
+                    <input type="hidden" name="app[excelFile]" value="keywords.xlsx">
+                    <input type="hidden" name="app[keywordColumn]" value="Keyword">
+                    <input type="hidden" name="app[delayBetweenPosts]" value="5000">
+                    <input type="hidden" name="app[contentTemplate]" value="Write a comprehensive, engaging, and SEO-optimized article about &quot;{keyword}&quot; that follows these guidelines:\n\n1. The article should be at least {minWords} words\n2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that's for the title)\n3. Include a compelling introduction that hooks the reader\n4. Break down the topic into logical sections with descriptive headings\n5. Include practical tips, examples, and actionable advice\n6. Add a conclusion that summarizes key points\n7. Optimize for SEO with natural keyword usage\n8. Make the content valuable and informative for the reader">
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center text-muted mt-4">
+            <small>&copy; 2025 WordPress Automation</small>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation between steps
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            let currentStep = 0;
+            
+            // Next step buttons
+            document.querySelectorAll('.next-step').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Validate current step
+                    if (validateStep(steps[currentStep])) {
+                        // Hide current step
+                        document.getElementById(steps[currentStep]).classList.remove('active');
+                        document.getElementById(steps[currentStep] + '-indicator').classList.remove('active');
+                        document.getElementById(steps[currentStep] + '-indicator').classList.add('completed');
+                        
+                        // Show next step
+                        currentStep++;
+                        document.getElementById(steps[currentStep]).classList.add('active');
+                        document.getElementById(steps[currentStep] + '-indicator').classList.add('active');
+                    }
+                });
+            });
+            
+            // Previous step buttons
+            document.querySelectorAll('.prev-step').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Hide current step
+                    document.getElementById(steps[currentStep]).classList.remove('active');
+                    document.getElementById(steps[currentStep] + '-indicator').classList.remove('active');
+                    
+                    // Show previous step
+                    currentStep--;
+                    document.getElementById(steps[currentStep]).classList.add('active');
+                    document.getElementById(steps[currentStep] + '-indicator').classList.add('active');
+                });
+            });
+            
+            // Validate step
+            function validateStep(step) {
+                if (step === 'step1') {
+                    return true; // No validation needed for step 1
+                }
+                
+                if (step === 'step2') {
+                    const apiUrl = document.getElementById('wpApiUrl').value;
+                    const username = document.getElementById('wpUsername').value;
+                    const password = document.getElementById('wpPassword').value;
+                    
+                    if (!apiUrl || !username || !password) {
+                        alert('Please fill in all WordPress configuration fields');
+                        return false;
+                    }
+                    
+                    // Check if API URL is valid
+                    if (!apiUrl.startsWith('http')) {
+                        alert('WordPress API URL must start with http:// or https://');
+                        return false;
+                    }
+                    
+                    return true;
+                }
+                
+                if (step === 'step3') {
+                    const apiKey = document.getElementById('openaiApiKey').value;
+                    
+                    if (!apiKey) {
+                        alert('Please enter your OpenAI API key');
+                        return false;
+                    }
+                    
+                    return true;
+                }
+                
+                return true;
+            }
+            
+            // Show/hide password
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const inputField = document.getElementById(targetId);
+                    
+                    // Toggle password visibility
+                    if (inputField.type === 'password') {
+                        inputField.type = 'text';
+                        this.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                    } else {
+                        inputField.type = 'password';
+                        this.innerHTML = '<i class="bi bi-eye"></i>';
+                    }
+                });
+            });
+            
+            // Test WordPress connection
+            document.querySelector('.test-wordpress-btn').addEventListener('click', function() {
+                const apiUrl = document.getElementById('wpApiUrl').value;
+                const username = document.getElementById('wpUsername').value;
+                const password = document.getElementById('wpPassword').value;
+                
+                if (!apiUrl || !username || !password) {
+                    alert('Please fill in all WordPress configuration fields');
+                    return;
+                }
+                
+                const resultsDiv = document.querySelector('.test-connection-results');
+                resultsDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Testing...</span>
+                        </div>
+                        <p>Testing WordPress connection...</p>
+                    </div>
+                `;
+                resultsDiv.classList.remove('d-none');
+                
+                // Test connection
+                fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        apiUrl: apiUrl,
+                        username: username,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-success mb-0">
+                                <h5><i class="bi bi-check-circle"></i> Connection Successful!</h5>
+                                <p>Successfully connected to WordPress as:</p>
+                                <ul>
+                                    <li><strong>User:</strong> ${data.user.name}</li>
+                                    <li><strong>ID:</strong> ${data.user.id}</li>
+                                    <li><strong>Roles:</strong> ${Array.isArray(data.user.roles) ? data.user.roles.join(', ') : 'N/A'}</li>
+                                </ul>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-danger mb-0">
+                                <h5><i class="bi bi-x-circle"></i> Connection Failed</h5>
+                                <p>${data.error}</p>
+                                <p class="mb-0"><strong>Suggestions:</strong></p>
+                                <ul>
+                                    <li>Verify your WordPress URL is correct</li>
+                                    <li>Check your username and password</li>
+                                    <li>Ensure your user has appropriate permissions</li>
+                                    <li>Check that your WordPress site has REST API enabled</li>
+                                </ul>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            <h5><i class="bi bi-x-circle"></i> Error</h5>
+                            <p>An error occurred: ${error.message}</p>
+                        </div>
+                    `;
+                });
+            });
+            
+            // Test OpenAI API
+            document.querySelector('.test-openai-btn').addEventListener('click', function() {
+                const apiKey = document.getElementById('openaiApiKey').value;
+                const model = document.getElementById('openaiModel').value;
+                
+                if (!apiKey) {
+                    alert('Please enter your OpenAI API key');
+                    return;
+                }
+                
+                const resultsDiv = document.querySelector('.test-openai-results');
+                resultsDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Testing...</span>
+                        </div>
+                        <p>Testing OpenAI API connection...</p>
+                    </div>
+                `;
+                resultsDiv.classList.remove('d-none');
+                
+                // Test connection
+                fetch('/api/test-openai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        apiKey: apiKey,
+                        model: model
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-success mb-0">
+                                <h5><i class="bi bi-check-circle"></i> Connection Successful!</h5>
+                                <p>Successfully connected to OpenAI API.</p>
+                                <ul>
+                                    <li><strong>Model:</strong> ${data.model}</li>
+                                    <li><strong>Response:</strong> ${data.response}</li>
+                                </ul>
+                                <p class="mb-0">Your API key is valid and working correctly.</p>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div class="alert alert-danger mb-0">
+                                <h5><i class="bi bi-x-circle"></i> Connection Failed</h5>
+                                <p>${data.error}</p>
+                                <p class="mb-0"><strong>Suggestions:</strong></p>
+                                <ul>
+                                    <li>Verify your API key is entered correctly</li>
+                                    <li>Check that your OpenAI account has sufficient credits</li>
+                                    <li>Ensure you've set up billing in your OpenAI account</li>
+                                    <li>Try using a different model (like gpt-3.5-turbo)</li>
+                                </ul>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            <h5><i class="bi bi-x-circle"></i> Error</h5>
+                            <p>An error occurred: ${error.message}</p>
+                        </div>
+                    `;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

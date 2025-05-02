@@ -1,0 +1,316 @@
+<%- include('partials/header', {page: 'home'}) %>
+
+<div class="dashboard-container">
+  <!-- Status Overview Cards -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h4 class="section-title"><i class="bi bi-bar-chart-fill"></i> Dashboard Overview</h4>
+    </div>
+  </div>
+  
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon">
+            <i class="bi bi-file-text"></i>
+          </div>
+          <div class="stat-card-info">
+            <h2 id="total-keywords">0</h2>
+            <p>Total Keywords</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon bg-success">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="stat-card-info">
+            <h2 id="published-keywords">0</h2>
+            <p>Published</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon bg-warning">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+          <div class="stat-card-info">
+            <h2 id="pending-keywords">0</h2>
+            <p>Pending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-card-body">
+          <div class="stat-card-icon bg-info">
+            <i class="bi bi-graph-up"></i>
+          </div>
+          <div class="stat-card-info">
+            <h2 id="success-rate">0%</h2>
+            <p>Success Rate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- System Status Cards -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h4 class="section-title"><i class="bi bi-gear-fill"></i> System Status</h4>
+    </div>
+  </div>
+  
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="status-card <%= configValid ? 'status-card-success' : 'status-card-danger' %>">
+        <div class="status-card-content">
+          <div class="status-icon">
+            <i class="bi <%= configValid ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+          </div>
+          <div class="status-details">
+            <h5>Configuration</h5>
+            <p><%= configValid ? 'Valid' : 'Invalid' %></p>
+            <% if (!configValid) { %>
+              <small class="text-danger">Check your .env file</small>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="status-card <%= wpConnectionStatus ? 'status-card-success' : 'status-card-danger' %>">
+        <div class="status-card-content">
+          <div class="status-icon">
+            <i class="bi <%= wpConnectionStatus ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+          </div>
+          <div class="status-details">
+            <h5>WordPress</h5>
+            <p><%= wpConnectionStatus ? 'Connected' : 'Disconnected' %></p>
+            <% if (!wpConnectionStatus) { %>
+              <small class="text-danger">Check your WordPress credentials</small>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="status-card <%= excelFileExists ? 'status-card-success' : 'status-card-danger' %>">
+        <div class="status-card-content">
+          <div class="status-icon">
+            <i class="bi <%= excelFileExists ? 'bi-check-circle-fill' : 'bi-x-circle-fill' %>"></i>
+          </div>
+          <div class="status-details">
+            <h5>Keywords File</h5>
+            <p><%= excelFileExists ? 'Available' : 'Not Found' %></p>
+            <% if (!excelFileExists) { %>
+              <small class="text-danger">Go to Keywords page to create</small>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Automation Control -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h4 class="section-title"><i class="bi bi-play-circle-fill"></i> Automation Control</h4>
+    </div>
+  </div>
+  
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="control-card">
+        <% if (isJobRunning) { %>
+          <div class="control-card-header">
+            <h5><i class="bi bi-arrow-repeat spin"></i> Job in Progress</h5>
+          </div>
+          <div class="control-card-body">
+            <div class="progress-container">
+              <div class="progress-details">
+                <div class="progress-label">
+                  <span>Progress:</span>
+                  <span><%= jobProgress.current %> of <%= jobProgress.total %></span>
+                </div>
+                <div class="progress-percentage">
+                  <%= Math.round((jobProgress.current / jobProgress.total) * 100) || 0 %>%
+                </div>
+              </div>
+              <div class="custom-progress">
+                <div class="custom-progress-bar" style="width: <%= Math.round((jobProgress.current / jobProgress.total) * 100) || 0 %>%"></div>
+              </div>
+            </div>
+            <div class="job-status">
+              <div class="status-item">
+                <span class="status-label">Current Keyword:</span>
+                <span class="status-value"><%= jobProgress.currentKeyword %></span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">Status:</span>
+                <span class="status-value"><%= jobProgress.status %></span>
+              </div>
+            </div>
+            <div class="alert alert-info mt-3">
+              <i class="bi bi-info-circle"></i> The automation is currently running. Please wait until it finishes.
+            </div>
+          </div>
+        <% } else { %>
+          <div class="control-card-header">
+            <h5><i class="bi bi-lightning-charge"></i> Start Automation</h5>
+          </div>
+          <div class="control-card-body">
+            <p>Choose your automation method to generate and publish articles.</p>
+            
+            <div class="automation-options">
+              <div class="automation-option">
+                <h6>Process All Keywords</h6>
+                <p>Generate and publish articles for all pending keywords at once.</p>
+                <button id="start-job-btn" class="btn-action" <%= (!configValid || !wpConnectionStatus || !excelFileExists) ? 'disabled' : '' %>>
+                  <i class="bi bi-play-fill"></i> Start Full Automation
+                </button>
+              </div>
+              
+              <div class="divider"></div>
+              
+              <div class="automation-option">
+                <h6>Process Single Keyword</h6>
+                <p>Choose a specific keyword to process individually.</p>
+                <div class="keyword-select-container">
+                  <select id="single-keyword-select" class="custom-select" <%= (!configValid || !wpConnectionStatus || !excelFileExists) ? 'disabled' : '' %>>
+                    <option value="">-- Select a keyword --</option>
+                  </select>
+                  <button id="process-single-keyword-btn" class="btn-action" disabled>
+                    <i class="bi bi-play-fill"></i> Process
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <% if (!configValid || !wpConnectionStatus || !excelFileExists) { %>
+              <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle"></i> Please fix the issues above before starting the automation.
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Activity Log & Configuration -->
+  <div class="row">
+    <div class="col-md-8">
+      <h4 class="section-title"><i class="bi bi-activity"></i> Activity Log</h4>
+      <div class="log-card">
+        <div class="log-header">
+          <span>Recent Activity</span>
+          <button class="btn-clear-log" id="clear-log-btn"><i class="bi bi-trash"></i> Clear</button>
+        </div>
+        <div id="log-container" class="log-content">
+          <% if (jobProgress.log && jobProgress.log.length > 0) { %>
+            <% jobProgress.log.forEach(function(logItem) { %>
+              <div class="log-entry">
+                <% if (logItem.includes('✓')) { %>
+                  <span class="log-success"><i class="bi bi-check-circle"></i></span>
+                <% } else if (logItem.includes('✗')) { %>
+                  <span class="log-error"><i class="bi bi-x-circle"></i></span>
+                <% } else { %>
+                  <span class="log-info"><i class="bi bi-info-circle"></i></span>
+                <% } %>
+                <span class="log-text"><%= logItem %></span>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="empty-log">
+              <i class="bi bi-journal"></i>
+              <p>No activity recorded. Start the automation to see activity.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <h4 class="section-title"><i class="bi bi-sliders"></i> Configuration</h4>
+      <div class="config-card">
+        <div class="config-item">
+          <span class="config-label">WordPress URL:</span>
+          <span class="config-value"><%= config.wordpress.apiUrl %></span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">Username:</span>
+          <span class="config-value"><%= config.wordpress.username %></span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">OpenAI Model:</span>
+          <span class="config-value"><%= config.openai.model %></span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">Minimum Words:</span>
+          <span class="config-value"><%= config.app.minWords %></span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">Publish Status:</span>
+          <span class="config-value"><%= config.app.publishStatus %></span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">Excel File:</span>
+          <span class="config-value"><%= config.app.excelFile %></span>
+        </div>
+        <div class="config-actions">
+          <a href="/settings" class="btn-config">
+            <i class="bi bi-gear"></i> Edit Settings
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // JavaScript to handle job status updates will be in main.js
+  const isJobRunning = <%= isJobRunning %>;
+  
+  // Fetch keyword statistics when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Only run this on the dashboard page
+    if (window.location.pathname === '/' || window.location.pathname === '/index') {
+      fetchKeywordStats();
+    }
+  });
+  
+  // Function to fetch keyword statistics
+  function fetchKeywordStats() {
+    fetch('/api/keyword-stats')
+      .then(response => response.json())
+      .then(data => {
+        // Update the dashboard with real counts
+        document.getElementById('total-keywords').textContent = data.total;
+        document.getElementById('published-keywords').textContent = data.published;
+        document.getElementById('pending-keywords').textContent = data.pending;
+        
+        // Calculate and update success rate if there are published keywords
+        if (data.total > 0) {
+          const successRate = Math.round((data.published / data.total) * 100);
+          document.getElementById('success-rate').textContent = `${successRate}%`;
+        } else {
+          document.getElementById('success-rate').textContent = '0%';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching keyword stats:', error);
+      });
+  }
+</script>
+
+<%- include('partials/footer') %>

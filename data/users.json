@@ -1,0 +1,137 @@
+{
+  "users": [
+    {
+      "id": "f9fbf1ad4d6433a9ceefd2a8d801d1e3",
+      "username": "admin",
+      "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+      "name": "Administrator",
+      "email": "admin@example.com",
+      "role": "admin",
+      "createdAt": "2025-04-19T23:45:08.516Z"
+    },
+    {
+      "id": "2ee21e222ee1172a36bec078b1de8f2d",
+      "username": "munil",
+      "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+      "name": "munil",
+      "email": "munil@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-19T23:55:47.960Z"
+    },
+    {
+      "id": "fdec82520d3c15d86368859fbceb17f0",
+      "username": "hunter-arc",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "hunter-arc",
+      "email": "hunter-arc@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-04-22T15:26:16.657Z",
+      "organizationId": "13f275c7694e5dc8d0ea5dafc1668e12"
+    },
+    {
+      "id": "07484f84dbb0d62d27389cbf81ef1d09",
+      "username": "abdo",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "abdo",
+      "email": "abdo@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-04-22T15:29:45.221Z",
+      "organizationId": "0f073b963ea1f53f4e8f9a18693dbe27"
+    },
+    {
+      "id": "d6c0c1ced9f74621f986b5384b016bbf",
+      "username": "abdo2025",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "abdo2025",
+      "email": "abdo2025@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-04-22T15:42:23.021Z",
+      "organizationId": "587ce18b8d37ba8aae65c315e978b83b"
+    },
+    {
+      "id": "03139104dc0a8084830b3f3877940dff",
+      "username": "hunter-arc98",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "hunter-arc98",
+      "email": "hunter-arc98@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-04-22T16:46:20.385Z",
+      "organizationId": "aace865329d6f820936482fed9a47eaa"
+    },
+    {
+      "id": "530355fbf2918f71ea29a6846a4a0a35",
+      "username": "hunter-arc22",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "aaaaa",
+      "email": "aaa@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-22T17:15:10.771Z"
+    },
+    {
+      "id": "d3dd741a7e4da9ce20589e8d4a04889a",
+      "username": "mouad",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "mouad",
+      "email": "mouad@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-22T17:16:24.738Z"
+    },
+    {
+      "id": "af046d8344bc308e44063b7977ad4f19",
+      "username": "hamza",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "hamza",
+      "email": "hamza@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-22T17:19:34.769Z"
+    },
+    {
+      "id": "0b63d22da08706a19cf45d20f0939c6d",
+      "username": "benardi00",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "benardi00",
+      "email": "benardi00@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-22T17:20:54.655Z"
+    },
+    {
+      "id": "f7083e931d846fa171a3ea2cca4bf081",
+      "username": "abdo20258",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "abdo20258",
+      "email": "abdo20258@gmail.com",
+      "role": "employee",
+      "createdAt": "2025-04-22T17:30:47.527Z"
+    },
+    {
+      "id": "57d3a76a630d128e635d78ab37106b29",
+      "username": "Test 1",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "Test 1",
+      "email": "Test@gmail.com",
+      "role": "employee",
+      "organizationId": "587ce18b8d37ba8aae65c315e978b83b",
+      "createdAt": "2025-04-22T17:40:17.791Z"
+    },
+    {
+      "id": "f5bbc2839afcbd735865842053fa1ca2",
+      "username": "moka",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "moka",
+      "email": "moka@gmail.com",
+      "role": "employee",
+      "organizationId": "13f275c7694e5dc8d0ea5dafc1668e12",
+      "createdAt": "2025-04-22T18:04:24.983Z"
+    },
+    {
+      "id": "40b1ab24c104741af96113bb4b451963",
+      "username": "papa",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "papa",
+      "email": "papa@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-04-22T23:29:25.911Z",
+      "organizationId": "23c6a4b2acc803dfc3a0b01416c2f15a"
+    }
+  ]
+}

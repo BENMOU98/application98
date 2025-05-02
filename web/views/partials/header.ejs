@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Automation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">WordPress Automation</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <% if (locals.user) { %>
+                    <!-- Navigation for logged-in users -->
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'home') ? 'active' : '' %>" href="/">
+                                <i class="bi bi-house-door"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'keywords') ? 'active' : '' %>" href="/keywords">
+                                <i class="bi bi-tags"></i> Keywords
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'prompt-settings') ? 'active' : '' %>" href="/prompt-settings">
+                                <i class="bi bi-chat-square-text"></i> Prompts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'history') ? 'active' : '' %>" href="/history">
+                                <i class="bi bi-clock-history"></i> History
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'settings') ? 'active' : '' %>" href="/settings">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                        </li>
+                        <% if (locals.user.role === 'admin') { %>
+                            <li class="nav-item">
+                                <a class="nav-link <%= (typeof page !== 'undefined' && page === 'users') ? 'active' : '' %>" href="/users">
+                                    <i class="bi bi-people"></i> Users
+                                </a>
+                            </li>
+                            <!-- New Admin-only Employee Dashboard Link -->
+                            <li class="nav-item">
+                                <a class="nav-link <%= (typeof page !== 'undefined' && page === 'employee-dashboard') ? 'active' : '' %>" href="/admin/employee-dashboard">
+                                    <i class="bi bi-person-lines-fill"></i> Employee Activity
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                    
+                    <!-- User profile dropdown -->
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <%= locals.user.name %>
+                                <span class="badge <%= locals.user.role === 'admin' ? 'bg-danger' : 'bg-info' %> text-white">
+                                    <%= locals.user.role === 'admin' ? 'Admin' : 'Employee' %>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> My Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                <% } else { %>
+                    <!-- Navigation for non-logged-in users -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link <%= (typeof page !== 'undefined' && page === 'login') ? 'active' : '' %>" href="/login">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                    </ul>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <% if (typeof page !== 'undefined' && page !== 'login') { %>
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <% if (page === 'keywords') { %>
+                        <li class="breadcrumb-item active" aria-current="page">Keywords</li>
+                    <% } else if (page === 'prompt-settings') { %>
+                        <li class="breadcrumb-item active" aria-current="page">Prompt Settings</li>
+                    <% } else if (page === 'history') { %>
+                        <li class="breadcrumb-item active" aria-current="page">Publication History</li>
+                    <% } else if (page === 'settings') { %>
+                        <li class="breadcrumb-item active" aria-current="page">Settings</li>
+                    <% } else if (page === 'users') { %>
+                        <li class="breadcrumb-item active" aria-current="page">User Management</li>
+                    <% } else if (page === 'profile') { %>
+                        <li class="breadcrumb-item active" aria-current="page">My Profile</li>
+                    <% } else if (page === 'employee-dashboard') { %>
+                        <li class="breadcrumb-item active" aria-current="page">Employee Activity</li>
+                    <% } else if (page === 'generate' || page === 'preview') { %>
+                        <li class="breadcrumb-item"><a href="/keywords">Keywords</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Content Generation</li>
+                    <% } %>
+                </ol>
+            </nav>
+        <% } %>
