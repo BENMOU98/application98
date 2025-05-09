@@ -128,6 +128,9 @@
                                         <input type="number" class="form-control" id="delayBetweenPosts" name="delayBetweenPosts" value="<%= config.app.delayBetweenPosts %>" min="1000">
                                         <div class="form-text">Delay between publishing articles (in milliseconds)</div>
                                     </div>
+                                    
+                                    <!-- Hidden input field to maintain compatibility -->
+                                    <input type="hidden" id="contentTemplate" name="contentTemplate" value="<%= config.app.contentTemplate || '' %>">
                                 </div>
                             </div>
                             
@@ -205,24 +208,6 @@
                                     
                                     <div id="rankMathSettings" style="<%= config.rankMath && config.rankMath.enabled ? '' : 'display: none;' %>">
                                         <div class="mb-3">
-                                            <label for="seoTitlePrompt" class="form-label">SEO Title Prompt</label>
-                                            <textarea class="form-control" id="seoTitlePrompt" name="seoTitlePrompt" rows="3"><%= config.rankMath && config.rankMath.titlePrompt ? config.rankMath.titlePrompt : 'Generate 3 SEO-optimized title options for an article about "{keyword}". Each title should be compelling, under 60 characters, include the focus keyword naturally, and encourage clicks. Make each title different in structure and approach.' %></textarea>
-                                            <div class="form-text">Prompt used to generate SEO titles. Use {keyword} as placeholder.</div>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="seoDescriptionPrompt" class="form-label">SEO Description Prompt</label>
-                                            <textarea class="form-control" id="seoDescriptionPrompt" name="seoDescriptionPrompt" rows="3"><%= config.rankMath && config.rankMath.descriptionPrompt ? config.rankMath.descriptionPrompt : 'Generate 3 SEO meta descriptions for an article about "{keyword}". Each description should be 150-160 characters, include the focus keyword, summarize the content value, and include a call-to-action. Make each description unique in approach.' %></textarea>
-                                            <div class="form-text">Prompt used to generate meta descriptions. Use {keyword} as placeholder.</div>
-                                        </div>
-                                        
-                                        <div class="mb-3">
-                                            <label for="seoPermalinkPrompt" class="form-label">SEO Permalink Prompt</label>
-                                            <textarea class="form-control" id="seoPermalinkPrompt" name="seoPermalinkPrompt" rows="3"><%= config.rankMath && config.rankMath.permalinkPrompt ? config.rankMath.permalinkPrompt : 'Generate 3 SEO-friendly URL slugs for an article about "{keyword}". Each slug should be short (3-5 words), include the main keyword, use hyphens between words, avoid stop words, and be all lowercase. Make each slug unique but relevant to the topic.' %></textarea>
-                                            <div class="form-text">Prompt used to generate permalink slugs. Use {keyword} as placeholder.</div>
-                                        </div>
-                                        
-                                        <div class="mb-3">
                                             <label for="seoOptionsCount" class="form-label">Number of SEO Options to Generate</label>
                                             <select class="form-select" id="seoOptionsCount" name="seoOptionsCount">
                                                 <option value="3" <%= (!config.rankMath || !config.rankMath.optionsCount || config.rankMath.optionsCount === 3) ? 'selected' : '' %>>3 options (recommended)</option>
@@ -231,19 +216,11 @@
                                             </select>
                                             <div class="form-text">Number of SEO metadata options to generate for each article.</div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Article Content Settings</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="contentTemplate" class="form-label">Article Template</label>
-                                        <textarea class="form-control" id="contentTemplate" name="contentTemplate" rows="10"><%= config.app.contentTemplate || 'Write a comprehensive, engaging, and SEO-optimized article about "{keyword}" that follows these guidelines:\n\n1. The article should be at least {minWords} words\n2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that\'s for the title)\n3. Include a compelling introduction that hooks the reader\n4. Break down the topic into logical sections with descriptive headings\n5. Include practical tips, examples, and actionable advice\n6. Add a conclusion that summarizes key points\n7. Optimize for SEO with natural keyword usage\n8. Make the content valuable and informative for the reader' %></textarea>
-                                        <div class="form-text">Template for article generation. Use {keyword} and {minWords} as placeholders.</div>
+                                        
+                                        <!-- Hidden inputs to maintain compatibility -->
+                                        <input type="hidden" id="seoTitlePrompt" name="seoTitlePrompt" value="<%= config.rankMath && config.rankMath.titlePrompt ? config.rankMath.titlePrompt : 'Generate 3 SEO-optimized title options for an article about "{keyword}". Each title should be compelling, under 60 characters, include the focus keyword naturally, and encourage clicks. Make each title different in structure and approach.' %>">
+                                        <input type="hidden" id="seoDescriptionPrompt" name="seoDescriptionPrompt" value="<%= config.rankMath && config.rankMath.descriptionPrompt ? config.rankMath.descriptionPrompt : 'Generate 3 SEO meta descriptions for an article about "{keyword}". Each description should be 150-160 characters, include the focus keyword, summarize the content value, and include a call-to-action. Make each description unique in approach.' %>">
+                                        <input type="hidden" id="seoPermalinkPrompt" name="seoPermalinkPrompt" value="<%= config.rankMath && config.rankMath.permalinkPrompt ? config.rankMath.permalinkPrompt : 'Generate 3 SEO-friendly URL slugs for an article about "{keyword}". Each slug should be short (3-5 words), include the main keyword, use hyphens between words, avoid stop words, and be all lowercase. Make each slug unique but relevant to the topic.' %>">
                                     </div>
                                 </div>
                             </div>

@@ -22,151 +22,227 @@ async function generateArticleContent(openaiConfig, keyword, minWords = 800, pro
       apiKey: openaiConfig.apiKey,
     });
 
-    // Check if we need to use multi-part generation
-    if (promptSettings && promptSettings.useMultiPartGeneration) {
-      return await generateMultiPartArticle(openai, openaiConfig, keyword, minWords, promptSettings);
-    }
-
-    // Prepare the prompt for content generation (single part)
-    let contentPrompt;
-    
-    if (promptSettings && promptSettings.mainPrompt) {
-      // Use the custom template from settings
-      contentPrompt = applyPromptVariables(promptSettings.mainPrompt, {
-        keyword: keyword,
-        minWords: minWords
+    // FIRST PRIORITY: Check if we have system and user prompts
+    if (promptSettings && promptSettings.systemPrompt && promptSettings.userPrompt) {
+      console.log('Using system and user prompts for article generation');
+      
+      // Replace placeholders in the user prompt
+      const userPrompt = (promptSettings.userPrompt || '')
+        .replace(/\[keyword\]/g, keyword)
+        .replace(/\{keyword\}/g, keyword)
+        .replace(/\[minWords\]/g, minWords)
+        .replace(/\{minWords\}/g, minWords);
+      
+      // Generate the article content
+      const contentResponse = await openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { role: "system", content: promptSettings.systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: openaiConfig.temperature,
+        max_tokens: openaiConfig.maxTokens,
       });
-    } else {
-      // Use the default template
-      contentPrompt = `Write a comprehensive, engaging, and SEO-optimized article about "${keyword}" that follows these guidelines:
       
-      1. The article should be at least ${minWords} words
-      2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that's for the title)
-      3. Include a compelling introduction that hooks the reader
-      4. Break down the topic into logical sections with descriptive headings
-      5. Include practical tips, examples, and actionable advice
-      6. Add a conclusion that summarizes key points
-      7. Optimize for SEO with natural keyword usage
-      8. Make the content valuable and informative for the reader
+      // Extract the content from the response
+      let content = contentResponse.choices[0].message.content;
       
-      Format the article with proper HTML tags:
-      - Use <h2> for main section headings
-      - Use <h3> for subsection headings
-      - Use <p> for paragraphs
-      - Use <ul> and <li> for bullet points where appropriate
-      - Use <ol> and <li> for numbered lists where appropriate
+      // Extract title from content if it includes a title at the beginning
+      let title = '';
+      const titleMatch = content.match(/^(?:#\s*|<h1>|Title:?\s*)(.*?)(?:\n|$|<\/h1>)/i);
       
-      Write in a conversational, authoritative tone that engages the reader.`;
-    }
-    
-    // Prepare system message with tone guidance if available
-    let systemMessage = "You are a professional content writer specializing in SEO-optimized articles that follow WordPress formatting standards.";
-    
-    if (promptSettings && promptSettings.toneVoice) {
-      systemMessage += `\n\nWrite in the following tone/voice: ${promptSettings.toneVoice}`;
-    }
-    
-    // Add SEO guidelines if available
-    if (promptSettings && promptSettings.seoGuidelines) {
-      contentPrompt += `\n\nFollow these additional SEO guidelines:\n${promptSettings.seoGuidelines}`;
-    }
-    
-    // Add things to avoid if available - with stronger emphasis
-    if (promptSettings && promptSettings.thingsToAvoid) {
-      contentPrompt += `\n\nIMPORTANT: DO NOT mention, include, or reference ANY of the following in your content. This is a strict requirement. DO NOT use ANY of these terms or concepts:\n${promptSettings.thingsToAvoid}`;
-    }
-    
-    // Add article format if enabled and specified
-    if (promptSettings && promptSettings.useArticleFormat && promptSettings.articleFormat) {
-      contentPrompt += `\n\nARTICLE FORMAT INSTRUCTIONS:\nFollow this specific structure and format for the article:\n${promptSettings.articleFormat}`;
-    }
-    
-    // Check if we should use recipe format
-    if (promptSettings && promptSettings.enableRecipeDetection && keyword.toLowerCase().match(/recipe|dish|cook|bake|food|meal|breakfast|lunch|dinner|dessert|appetizer|snack/)) {
-      // Add recipe format prompt
-      if (promptSettings.recipeFormatPrompt) {
-        contentPrompt += `\n\nRECIPE FORMAT INSTRUCTIONS:\n${promptSettings.recipeFormatPrompt}`;
+      if (titleMatch && titleMatch[1]) {
+        title = titleMatch[1].trim();
+        // Remove the title from the content
+        content = content.replace(titleMatch[0], '').trim();
       } else {
-        contentPrompt += `\n\nRECIPE FORMAT INSTRUCTIONS:
-Please format this as a recipe article with the following sections:
-1. A brief introduction about the dish
-2. A "Ingredients" section with a clear, bulleted list (<ul><li>) of all ingredients with quantities
-3. A "Instructions" section with numbered steps (<ol><li>) for preparation
-4. Include preparation time, cooking time, and servings information clearly labeled (e.g., "Prep Time: 15 minutes")
-5. Add a "Tips and Notes" section with helpful advice for making this recipe
-6. If relevant, include nutrition information`;
+        // If no title in content, generate one separately
+        const titleResponse = await openai.chat.completions.create({
+          model: openaiConfig.model,
+          messages: [
+            { role: "system", content: "Generate a compelling, SEO-friendly title for this article." },
+            { role: "user", content: `Create an engaging, SEO-friendly title for an article about "${keyword}" that will attract clicks and is optimized for SEO.` }
+          ],
+          temperature: openaiConfig.temperature,
+          max_tokens: 50,
+        });
+        
+        title = titleResponse.choices[0].message.content.replace(/"/g, '');
       }
-    }
-    
-    // Generate the article content
-    const contentResponse = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: contentPrompt }
-      ],
-      temperature: openaiConfig.temperature,
-      max_tokens: openaiConfig.maxTokens,
-    });
-    
-    // Extract the content from the response
-    let content = contentResponse.choices[0].message.content;
-    
-    // Post-process content to ensure "things to avoid" are really removed
-    if (promptSettings && promptSettings.thingsToAvoid) {
-      content = removeProhibitedContent(content, promptSettings.thingsToAvoid);
-    }
-    
-    // Create the prompt for the article title
-    const titlePrompt = `Create an engaging, SEO-friendly title for an article about "${keyword}" that will attract clicks and is optimized for SEO.`;
-    
-    // Add things to avoid to title generation if available
-    let fullTitlePrompt = titlePrompt;
-    if (promptSettings && promptSettings.thingsToAvoid) {
-      fullTitlePrompt += `\n\nIMPORTANT: DO NOT use ANY of the following words in the title: ${promptSettings.thingsToAvoid}`;
-    }
-    
-    // Generate the title
-    const titleResponse = await openai.chat.completions.create({
-      model: openaiConfig.model,
-      messages: [
-        { role: "system", content: "Generate a compelling, SEO-friendly title for this article." },
-        { role: "user", content: fullTitlePrompt }
-      ],
-      temperature: openaiConfig.temperature,
-      max_tokens: 50,
-    });
-    
-    // Extract the title from the response and clean it up
-    let title = titleResponse.choices[0].message.content.replace(/"/g, '');
-    
-    // Post-process title to ensure "things to avoid" are really removed
-    if (promptSettings && promptSettings.thingsToAvoid) {
-      title = removeProhibitedContent(title, promptSettings.thingsToAvoid);
-    }
-    
-    console.log(`Generated article: "${title}" (${countWords(content)} words)`);
-    
-    // Check if the content contains a recipe (if recipe detection is enabled)
-    let recipeData = null;
-    if (promptSettings && promptSettings.enableRecipeDetection) {
-      recipeData = extractRecipeData(content, keyword);
-      if (recipeData) {
-        console.log('Recipe detected and data extracted successfully');
-      }
-    }
-    
-    return {
-      title,
-      content: content.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      
+      console.log(`Generated article using system/user prompts: "${title}" (${countWords(content)} words)`);
+      
+      // Format content - convert markdown to HTML
+      content = content.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
                 .replace(/^## (.*)/gm, "<h2>$1</h2>")
                 .replace(/^### (.*)/gm, "<h3>$1</h3>")
                 .replace(/\n\n/g, "</p><p>")
                 .replace(/^(?!<h|<p|<\/)/gm, "<p>")
-                .replace(/(?<!>)$/gm, "</p>"),
-      wordCount: countWords(content),
-      recipeData  // Will be null if no recipe is detected or detection is disabled
-    };
+                .replace(/(?<!>)$/gm, "</p>");
+      
+      // Check if the content contains a recipe (if recipe detection is enabled)
+      let recipeData = null;
+      if (promptSettings.enableRecipeDetection) {
+        recipeData = extractRecipeData(content, keyword);
+        if (recipeData) {
+          console.log('Recipe detected and data extracted successfully');
+        }
+      }
+      
+      return {
+        title,
+        content,
+        wordCount: countWords(content),
+        recipeData
+      };
+    }
+    // FALLBACK: Check if we need to use multi-part generation
+    else if (promptSettings && promptSettings.useMultiPartGeneration) {
+      return await generateMultiPartArticle(openai, openaiConfig, keyword, minWords, promptSettings);
+    }
+    // FALLBACK: Use the single part generation with mainPrompt
+    else {
+      // Prepare the prompt for content generation (single part)
+      let contentPrompt;
+      
+      if (promptSettings && promptSettings.mainPrompt) {
+        // Use the custom template from settings
+        contentPrompt = applyPromptVariables(promptSettings.mainPrompt, {
+          keyword: keyword,
+          minWords: minWords
+        });
+      } else {
+        // Use the default template
+        contentPrompt = `Write a comprehensive, engaging, and SEO-optimized article about "${keyword}" that follows these guidelines:
+        
+        1. The article should be at least ${minWords} words
+        2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that's for the title)
+        3. Include a compelling introduction that hooks the reader
+        4. Break down the topic into logical sections with descriptive headings
+        5. Include practical tips, examples, and actionable advice
+        6. Add a conclusion that summarizes key points
+        7. Optimize for SEO with natural keyword usage
+        8. Make the content valuable and informative for the reader
+        
+        Format the article with proper HTML tags:
+        - Use <h2> for main section headings
+        - Use <h3> for subsection headings
+        - Use <p> for paragraphs
+        - Use <ul> and <li> for bullet points where appropriate
+        - Use <ol> and <li> for numbered lists where appropriate
+        
+        Write in a conversational, authoritative tone that engages the reader.`;
+      }
+      
+      // Prepare system message with tone guidance if available
+      let systemMessage = "You are a professional content writer specializing in SEO-optimized articles that follow WordPress formatting standards.";
+      
+      if (promptSettings && promptSettings.toneVoice) {
+        systemMessage += `\n\nWrite in the following tone/voice: ${promptSettings.toneVoice}`;
+      }
+      
+      // Add SEO guidelines if available
+      if (promptSettings && promptSettings.seoGuidelines) {
+        contentPrompt += `\n\nFollow these additional SEO guidelines:\n${promptSettings.seoGuidelines}`;
+      }
+      
+      // Add things to avoid if available - with stronger emphasis
+      if (promptSettings && promptSettings.thingsToAvoid) {
+        contentPrompt += `\n\nIMPORTANT: DO NOT mention, include, or reference ANY of the following in your content. This is a strict requirement. DO NOT use ANY of these terms or concepts:\n${promptSettings.thingsToAvoid}`;
+      }
+      
+      // Add article format if enabled and specified
+      if (promptSettings && promptSettings.useArticleFormat && promptSettings.articleFormat) {
+        contentPrompt += `\n\nARTICLE FORMAT INSTRUCTIONS:\nFollow this specific structure and format for the article:\n${promptSettings.articleFormat}`;
+      }
+      
+      // Check if we should use recipe format
+      if (promptSettings && promptSettings.enableRecipeDetection && keyword.toLowerCase().match(/recipe|dish|cook|bake|food|meal|breakfast|lunch|dinner|dessert|appetizer|snack/)) {
+        // Add recipe format prompt
+        if (promptSettings.recipeFormatPrompt) {
+          contentPrompt += `\n\nRECIPE FORMAT INSTRUCTIONS:\n${promptSettings.recipeFormatPrompt}`;
+        } else {
+          contentPrompt += `\n\nRECIPE FORMAT INSTRUCTIONS:
+  Please format this as a recipe article with the following sections:
+  1. A brief introduction about the dish
+  2. A "Ingredients" section with a clear, bulleted list (<ul><li>) of all ingredients with quantities
+  3. A "Instructions" section with numbered steps (<ol><li>) for preparation
+  4. Include preparation time, cooking time, and servings information clearly labeled (e.g., "Prep Time: 15 minutes")
+  5. Add a "Tips and Notes" section with helpful advice for making this recipe
+  6. If relevant, include nutrition information`;
+        }
+      }
+      
+      // Generate the article content
+      const contentResponse = await openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: contentPrompt }
+        ],
+        temperature: openaiConfig.temperature,
+        max_tokens: openaiConfig.maxTokens,
+      });
+      
+      // Extract the content from the response
+      let content = contentResponse.choices[0].message.content;
+      
+      // Post-process content to ensure "things to avoid" are really removed
+      if (promptSettings && promptSettings.thingsToAvoid) {
+        content = removeProhibitedContent(content, promptSettings.thingsToAvoid);
+      }
+      
+      // Create the prompt for the article title
+      const titlePrompt = `Create an engaging, SEO-friendly title for an article about "${keyword}" that will attract clicks and is optimized for SEO.`;
+      
+      // Add things to avoid to title generation if available
+      let fullTitlePrompt = titlePrompt;
+      if (promptSettings && promptSettings.thingsToAvoid) {
+        fullTitlePrompt += `\n\nIMPORTANT: DO NOT use ANY of the following words in the title: ${promptSettings.thingsToAvoid}`;
+      }
+      
+      // Generate the title
+      const titleResponse = await openai.chat.completions.create({
+        model: openaiConfig.model,
+        messages: [
+          { role: "system", content: "Generate a compelling, SEO-friendly title for this article." },
+          { role: "user", content: fullTitlePrompt }
+        ],
+        temperature: openaiConfig.temperature,
+        max_tokens: 50,
+      });
+      
+      // Extract the title from the response and clean it up
+      let title = titleResponse.choices[0].message.content.replace(/"/g, '');
+      
+      // Post-process title to ensure "things to avoid" are really removed
+      if (promptSettings && promptSettings.thingsToAvoid) {
+        title = removeProhibitedContent(title, promptSettings.thingsToAvoid);
+      }
+      
+      console.log(`Generated article: "${title}" (${countWords(content)} words)`);
+      
+      // Check if the content contains a recipe (if recipe detection is enabled)
+      let recipeData = null;
+      if (promptSettings && promptSettings.enableRecipeDetection) {
+        recipeData = extractRecipeData(content, keyword);
+        if (recipeData) {
+          console.log('Recipe detected and data extracted successfully');
+        }
+      }
+      
+      return {
+        title,
+        content: content.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+                  .replace(/^## (.*)/gm, "<h2>$1</h2>")
+                  .replace(/^### (.*)/gm, "<h3>$1</h3>")
+                  .replace(/\n\n/g, "</p><p>")
+                  .replace(/^(?!<h|<p|<\/)/gm, "<p>")
+                  .replace(/(?<!>)$/gm, "</p>"),
+        wordCount: countWords(content),
+        recipeData  // Will be null if no recipe is detected or detection is disabled
+      };
+    }
   } catch (error) {
     console.error('Error generating article content:', error.message);
     throw error;

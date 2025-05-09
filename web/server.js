@@ -1762,9 +1762,10 @@ app.post('/api/save-settings', isAuthenticated, isAdmin, async (req, res) => {
       },
       openai: {
         apiKey: openai.apiKey,
-        model: openai.model,
+        // Preserve the existing model setting if present, otherwise use incoming value
+        model: req.orgConfig.prompts?.model || req.orgConfig.openai.model || 'gpt-4',
         temperature: parseFloat(openai.temperature),
-        maxTokens: parseInt(openai.maxTokens)
+        maxTokens: parseInt(openai.maxTokens),
       },
       app: {
         ...req.orgConfig.app,
@@ -1791,17 +1792,17 @@ app.post('/api/save-settings', isAuthenticated, isAdmin, async (req, res) => {
           useFixedTemplate: useFixedTemplate,
           // Preserve existing custom format settings
           ingredientsFormat: (req.orgConfig.wpRecipeMaker?.customRecipeFormat?.ingredientsFormat || 
-                            wpRecipeMaker?.customRecipeFormat?.ingredientsFormat || 
-                            "**Ingredients**\n**  **\n{ingredients}"),
+                           wpRecipeMaker?.customRecipeFormat?.ingredientsFormat || 
+                           "**Ingredients**\n**  **\n{ingredients}"),
           instructionsFormat: (req.orgConfig.wpRecipeMaker?.customRecipeFormat?.instructionsFormat || 
                             wpRecipeMaker?.customRecipeFormat?.instructionsFormat || 
                             "**Instructions**\n** **\n{instructions}"),
           ingredientItemFormat: (req.orgConfig.wpRecipeMaker?.customRecipeFormat?.ingredientItemFormat || 
-                              wpRecipeMaker?.customRecipeFormat?.ingredientItemFormat || 
-                              "* {ingredient}"),
+                               wpRecipeMaker?.customRecipeFormat?.ingredientItemFormat || 
+                               "* {ingredient}"),
           instructionItemFormat: (req.orgConfig.wpRecipeMaker?.customRecipeFormat?.instructionItemFormat || 
-                              wpRecipeMaker?.customRecipeFormat?.instructionItemFormat || 
-                              "Step {number}: {instruction}"),
+                               wpRecipeMaker?.customRecipeFormat?.instructionItemFormat || 
+                               "Step {number}: {instruction}"),
           useCustomFormatting: true,
           customTemplate: (req.orgConfig.wpRecipeMaker?.customRecipeFormat?.customTemplate || 
                         wpRecipeMaker?.customRecipeFormat?.customTemplate || 
@@ -1809,9 +1810,12 @@ app.post('/api/save-settings', isAuthenticated, isAdmin, async (req, res) => {
         }
       },
       // Prompts settings with explicit boolean handling
+      // Preserve existing prompts settings, particularly the model
       prompts: Object.assign({}, req.orgConfig.prompts || {}, prompts || {}, {
         useCustomRecipePrompt: useCustomRecipePrompt,
-        recipePromptTemplate: prompts?.recipePromptTemplate || req.orgConfig.prompts?.recipePromptTemplate || ''
+        recipePromptTemplate: prompts?.recipePromptTemplate || req.orgConfig.prompts?.recipePromptTemplate || '',
+        // Ensure we don't overwrite the model setting
+        model: req.orgConfig.prompts?.model || req.orgConfig.openai.model || 'gpt-4'
       }),
       // Rank Math settings with explicit boolean handling
       rankMath: {
@@ -1840,92 +1844,6 @@ app.post('/api/save-settings', isAuthenticated, isAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-// API endpoint to save prompt settings - Requires authentication
-
-app.post('/api/save-prompt-settings', isAuthenticated, async (req, res) => {
-  try {
-    const promptSettings = req.body;
-    
-    // Update config object in memory
-// Update organization-specific config
-const orgConfig = {
-  ...req.orgConfig,
-  prompts: {
-    useMultiPartGeneration: promptSettings.useMultiPartGeneration,
-    mainPrompt: promptSettings.mainPrompt,
-    part1Prompt: promptSettings.part1Prompt,
-    part2Prompt: promptSettings.part2Prompt,
-    part3Prompt: promptSettings.part3Prompt,
-    toneVoice: promptSettings.toneVoice,
-    seoGuidelines: promptSettings.seoGuidelines,
-    thingsToAvoid: promptSettings.thingsToAvoid,
-    articleFormat: promptSettings.articleFormat,
-    useArticleFormat: promptSettings.useArticleFormat
-  }
-};
-
-// Save organization-specific config
-const configPath = path.join(__dirname, '../data', req.organization.configFile);
-await fs.writeFile(configPath, JSON.stringify(orgConfig, null, 2));
-    
-    // Try to update .env file if possible
-    try {
-      const envPath = path.join(__dirname, '../.env');
-      let envContent = await readFile(envPath);
-      
-      // Helper function to update environment variables
-      function updateEnvVariable(content, key, value) {
-        // Escape special characters in value
-        const escapedValue = value
-          ? value
-              .replace(/\\/g, '\\\\')
-              .replace(/"/g, '\\"')
-              .replace(/\n/g, '\\n')
-          : '';
-        
-        // Check if the variable already exists
-        const regex = new RegExp(`^${key}=.*`, 'm');
-        
-        if (regex.test(content)) {
-          // Update existing variable
-          return content.replace(regex, `${key}="${escapedValue}"`);
-        } else {
-          // Add new variable at the end
-          return `${content}\n${key}="${escapedValue}"`;
-        }
-      }
-      
-      // Update or add each setting
-      envContent = updateEnvVariable(envContent, 'USE_MULTI_PART_GENERATION', promptSettings.useMultiPartGeneration.toString());
-      envContent = updateEnvVariable(envContent, 'MAIN_PROMPT', promptSettings.mainPrompt);
-      envContent = updateEnvVariable(envContent, 'PART1_PROMPT', promptSettings.part1Prompt);
-      envContent = updateEnvVariable(envContent, 'PART2_PROMPT', promptSettings.part2Prompt);
-      envContent = updateEnvVariable(envContent, 'PART3_PROMPT', promptSettings.part3Prompt);
-      envContent = updateEnvVariable(envContent, 'TONE_VOICE', promptSettings.toneVoice);
-      envContent = updateEnvVariable(envContent, 'SEO_GUIDELINES', promptSettings.seoGuidelines);
-      envContent = updateEnvVariable(envContent, 'THINGS_TO_AVOID', promptSettings.thingsToAvoid);
-      
-      // Add new article format settings
-      envContent = updateEnvVariable(envContent, 'ARTICLE_FORMAT', promptSettings.articleFormat);
-      envContent = updateEnvVariable(envContent, 'USE_ARTICLE_FORMAT', promptSettings.useArticleFormat.toString());
-      
-      // Write updated content back to .env file
-      await writeFile(envPath, envContent);
-      
-      console.log("Successfully updated .env file with prompt settings");
-    } catch (envError) {
-      console.warn("Unable to update .env file, but settings are stored in memory:", envError.message);
-      // Continue without failing - settings are still in memory
-    }
-    
-    // Success response
-    req.flash('success', 'Prompt settings saved successfully');
-    res.json({ success: true, message: 'Prompt settings saved successfully' });
-  } catch (error) {
-    console.error('Error saving prompt settings:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
 
 // API endpoint to test prompt generation - Requires authentication
 app.post('/api/test-prompt-generation', isAuthenticated, async (req, res) => {
@@ -1942,7 +1860,7 @@ app.post('/api/test-prompt-generation', isAuthenticated, async (req, res) => {
     // Set up temporary OpenAI config with reduced tokens for faster testing
     const testOpenAIConfig = {
       ...req.orgConfig.openai,
-      maxTokens: 500,  // Reduced tokens for faster response
+  
     };
     
     // Generate sample content
@@ -2969,6 +2887,149 @@ app.post('/api/test-rank-math', isAuthenticated, isAdmin, async (req, res) => {
     res.json({
       success: false,
       error: 'Connection failed: ' + error.message
+    });
+  }
+});
+
+// Add this to your app.js or server.js or in your routes directory
+// Additional routes for prompt settings
+
+// Save prompt settings
+// API endpoint to save prompt settings
+// API endpoint to save prompt settings with model validation
+// API endpoint to save prompt settings with model validation
+// API endpoint to save prompt settings with model validation
+// In server.js, update the /api/save-prompt-settings endpoint
+app.post('/api/save-prompt-settings', isAuthenticated, async (req, res) => {
+  try {
+    // Get all the setting values from the request
+    const {
+      // Existing settings
+      useMultiPartGeneration, systemPrompt, userPrompt, model, temperature, maxTokens,
+      mainPrompt, part1Prompt, part2Prompt, part3Prompt,
+      // SEO settings
+      seoSystemPrompt, seoTitlePrompt, seoDescriptionPrompt, seoPermalinkPrompt,
+      seoModelTemperature, seoModelName
+    } = req.body;
+    
+    // Create updated config
+    const orgConfig = {
+      ...req.orgConfig,
+      prompts: {
+        ...req.orgConfig.prompts,
+        // Existing settings
+        useMultiPartGeneration: useMultiPartGeneration === true,
+        systemPrompt: systemPrompt || '',
+        userPrompt: userPrompt || '',
+        model: model || 'gpt-4',
+        temperature: parseFloat(temperature) || 0.7,
+        maxTokens: parseInt(maxTokens || '4000'),
+        mainPrompt: mainPrompt || '',
+        part1Prompt: part1Prompt || '',
+        part2Prompt: part2Prompt || '',
+        part3Prompt: part3Prompt || '',
+      },
+      // Update Rank Math settings to include new fields
+      rankMath: {
+        ...req.orgConfig.rankMath,
+        systemPrompt: seoSystemPrompt || '',
+        titlePrompt: seoTitlePrompt || '',
+        descriptionPrompt: seoDescriptionPrompt || '',
+        permalinkPrompt: seoPermalinkPrompt || '',
+        temperature: parseFloat(seoModelTemperature) || 0.7,
+        model: seoModelName || 'gpt-4',
+        enabled: req.orgConfig.rankMath ? req.orgConfig.rankMath.enabled : false,
+        optionsCount: req.orgConfig.rankMath ? req.orgConfig.rankMath.optionsCount : 3
+      }
+    };
+    
+    // Save the updated config
+    const configPath = path.join(__dirname, '../data', req.organization.configFile);
+    await fs.writeFile(configPath, JSON.stringify(orgConfig, null, 2));
+    
+    req.flash('success', 'Prompt settings saved successfully');
+    res.json({ success: true, message: 'Prompt settings saved successfully' });
+  } catch (error) {
+    console.error('Error saving prompt settings:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Test prompt generation - fixed to use organization config
+// Test prompt generation - fixed to use organization config
+// Test prompt generation that focuses on using system and user prompts
+app.post('/api/test-prompt-generation', isAuthenticated, async (req, res) => {
+  try {
+    const { keyword, promptSettings } = req.body;
+    
+    // Validate inputs
+    if (!keyword) {
+      return res.status(400).json({
+        success: false,
+        error: 'Keyword is required'
+      });
+    }
+    
+    // Check if OpenAI is configured
+    if (!req.orgConfig.openai || !req.orgConfig.openai.apiKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'OpenAI API is not configured properly'
+      });
+    }
+    
+    // Log important values for debugging
+    console.log('Test generation for keyword:', keyword);
+    console.log('System prompt length:', promptSettings.systemPrompt?.length || 0);
+    console.log('User prompt length:', promptSettings.userPrompt?.length || 0);
+    console.log('Model:', promptSettings.model || req.orgConfig.openai.model || 'gpt-4');
+    
+    // Setup test OpenAI config
+    const openaiConfig = {
+      apiKey: req.orgConfig.openai.apiKey,
+      model: promptSettings.model || req.orgConfig.openai.model || 'gpt-4',
+      temperature: parseFloat(promptSettings.temperature) || req.orgConfig.openai.temperature || 0.7
+    };
+    
+    // Create focused prompt settings object (system and user prompts)
+    const focusedPromptSettings = {
+      systemPrompt: promptSettings.systemPrompt || '',
+      userPrompt: promptSettings.userPrompt || '',
+      // Always set this to false since we're only using system/user prompts
+      useMultiPartGeneration: false,
+      // Empty values for other fields
+      mainPrompt: '',
+      part1Prompt: '',
+      part2Prompt: '',
+      part3Prompt: '',
+      toneVoice: '',
+      seoGuidelines: '',
+      thingsToAvoid: '',
+      articleFormat: '',
+      useArticleFormat: false
+    };
+    
+    // Generate a test article (shorter version)
+    const article = await generateArticleContent(
+      openaiConfig,
+      keyword,
+      300, // Use a smaller word count for testing
+      focusedPromptSettings
+    );
+    
+    // Return the result
+    res.json({
+      success: true,
+      article: {
+        title: article.title,
+        content: article.content.substring(0, 1000) + '...' // Trim for response size
+      }
+    });
+  } catch (error) {
+    console.error('Error testing prompt generation:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });

@@ -4,175 +4,204 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-chat-square-text"></i> Article Generation Prompts</h5>
+                <h5 class="mb-0"><i class="bi bi-chat-square-text"></i> Prompt Settings</h5>
             </div>
             <div class="card-body">
-                <p class="mb-4">Configure the prompts used for article generation. Customize how your articles are created and formatted.</p>
+                <p class="mb-4">Configure the prompts used for article generation. Customize how your articles are created.</p>
                 
                 <form id="prompt-settings-form">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card mb-4">
                                 <div class="card-header bg-light">
-                                    <h5 class="mb-0">Article Generation Method</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" id="useMultiPartGeneration" name="useMultiPartGeneration" <%= config.prompts.useMultiPartGeneration ? 'checked' : '' %>>
-                                        <label class="form-check-label" for="useMultiPartGeneration">Use Multi-Part Article Generation</label>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Article Generation Settings</h5>
                                     </div>
-                                    <div class="form-text mb-3">
-                                        When enabled, articles will be generated in three parts: introduction, main body, and conclusion. Each part can have its own custom prompt.
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div id="single-prompt-section" class="card mb-4 <%= config.prompts.useMultiPartGeneration ? 'd-none' : '' %>">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Single-Part Generation</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="mainPrompt" class="form-label">Main Article Prompt</label>
-                                        <textarea class="form-control" id="mainPrompt" name="mainPrompt" rows="10"><%= config.prompts.mainPrompt || config.app.contentTemplate || 'Write a comprehensive, engaging, and SEO-optimized article about "{keyword}" that follows these guidelines:\n\n1. The article should be at least {minWords} words\n2. Use proper WordPress formatting with H2 and H3 headings (no H1 as that\'s for the title)\n3. Include a compelling introduction that hooks the reader\n4. Break down the topic into logical sections with descriptive headings\n5. Include practical tips, examples, and actionable advice\n6. Add a conclusion that summarizes key points\n7. Optimize for SEO with natural keyword usage\n8. Make the content valuable and informative for the reader' %></textarea>
-                                        <div class="form-text">
-                                            Use {keyword} and {minWords} as placeholders that will be replaced with the actual values.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div id="multi-part-section" class="card mb-4 <%= config.prompts.useMultiPartGeneration ? '' : 'd-none' %>">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Multi-Part Generation</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="part1Prompt" class="form-label">Part 1: Introduction Prompt</label>
-                                        <textarea class="form-control" id="part1Prompt" name="part1Prompt" rows="5"><%= config.prompts.part1Prompt || 'Write an engaging introduction for an article about "{keyword}". The introduction should hook the reader, explain why the topic is important, and preview what the article will cover. Use approximately {minWords} words.' %></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="part2Prompt" class="form-label">Part 2: Main Body Prompt</label>
-                                        <textarea class="form-control" id="part2Prompt" name="part2Prompt" rows="5"><%= config.prompts.part2Prompt || 'Write the main body content for an article about "{keyword}". This should include detailed information, breakdown of the topic into logical sections with appropriate H2 and H3 headings, practical tips, examples, and actionable advice. Use approximately {minWords} words.' %></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="part3Prompt" class="form-label">Part 3: Conclusion Prompt</label>
-                                        <textarea class="form-control" id="part3Prompt" name="part3Prompt" rows="5"><%= config.prompts.part3Prompt || 'Write a conclusion for an article about "{keyword}". The conclusion should summarize the key points, provide final thoughts, and possibly include a call to action. Use approximately {minWords} words.' %></textarea>
-                                    </div>
-                                    <div class="form-text">
-                                        Each part is generated separately and then combined. Use {keyword} and {minWords} as placeholders.
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">Content Style & SEO Settings</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="toneVoice" class="form-label">Tone & Voice</label>
-                                        <textarea class="form-control" id="toneVoice" name="toneVoice" rows="3"><%= config.prompts.toneVoice || '' %></textarea>
-                                        <div class="form-text">
-                                            Describe the tone and voice to use in the article. Example: "Conversational and friendly, with a touch of humor. Address the reader directly using 'you'."
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="seoGuidelines" class="form-label">SEO Guidelines</label>
-                                        <textarea class="form-control" id="seoGuidelines" name="seoGuidelines" rows="5"><%= config.prompts.seoGuidelines || '' %></textarea>
-                                        <div class="form-text">
-                                            Add specific SEO guidelines for the content. Example: "Use the keyword in the first paragraph. Include LSI keywords like [term1], [term2]. Add 3-5 subheadings with keywords. Aim for a 2% keyword density."
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="thingsToAvoid" class="form-label">Things to Avoid</label>
-                                        <textarea class="form-control" id="thingsToAvoid" name="thingsToAvoid" rows="5"><%= config.prompts.thingsToAvoid || '' %></textarea>
-                                        <div class="form-text">
-                                            Specify things to avoid in the content. Example: "Avoid jargon that beginners won't understand. Don't use passive voice. Avoid recommending specific branded products."
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Article Format Structure section -->
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Article Format Structure</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="alert alert-info">
-                                        <i class="bi bi-info-circle"></i> Define the structure and format that ChatGPT should follow when generating your articles.
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="articleFormat" class="form-label">Article Format Instructions</label>
-                                        <textarea 
-                                            class="form-control" 
-                                            id="articleFormat" 
-                                            name="articleFormat" 
-                                            rows="8"
-                                            placeholder="Example:
-1. Start with an engaging introduction
-2. Include 5 H2 headings with relevant subheadings
-3. Add a FAQ section with 5 questions and answers
-4. For recipe articles, include Ingredients and Instructions sections
-5. Conclude with a summary paragraph"
-                                        ><%= config.prompts && config.prompts.articleFormat ? config.prompts.articleFormat : '' %></textarea>
-                                        <div class="form-text">
-                                            Provide specific instructions for the article structure, sections, and formatting requirements.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="useArticleFormat" name="useArticleFormat"
-                                            <%= config.prompts && config.prompts.useArticleFormat ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="useArticleFormat">Apply this format to all generated articles</label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="formatPresets" class="form-label">Quick Presets</label>
-                                        <select class="form-select" id="formatPresets">
-                                            <option value="">-- Select a preset --</option>
-                                            <option value="blog">Standard Blog Post</option>
-                                            <option value="recipe">Recipe Article</option>
-                                            <option value="howto">How-To Guide</option>
-                                            <option value="listicle">List Article</option>
-                                            <option value="review">Product Review</option>
-                                        </select>
-                                        <div class="form-text">Choose a preset format or customize your own above.</div>
+                                        <i class="bi bi-info-circle"></i> Configure your prompts for article generation. The System Prompt and User Prompt control the entire generation process.
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Recipe Integration section -->
                             <div class="card mb-4">
                                 <div class="card-header bg-light">
-                                    <h5 class="mb-0"><i class="bi bi-cup-hot"></i> Recipe Integration</h5>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Article Generation Prompt</h5>
+                                        <button class="btn btn-link btn-sm p-0 toggle-card-body" type="button" data-bs-toggle="collapse" data-bs-target="#articlePromptCollapse" aria-expanded="true">
+                                            <i class="bi bi-dash-lg"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="alert alert-info">
-                                        <i class="bi bi-info-circle"></i> Configure recipe detection and automatic Tasty Recipes plugin integration.
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="enableRecipeDetection" name="enableRecipeDetection" 
-                                            <%= config.prompts && config.prompts.enableRecipeDetection ? 'checked' : '' %>>
-                                            <label class="form-check-label" for="enableRecipeDetection">Enable automatic recipe detection</label>
+                                <div class="collapse show" id="articlePromptCollapse">
+                                    <div class="card-body">
+                                        <nav>
+                                            <div class="nav nav-tabs" id="prompt-tab" role="tablist">
+                                                <button class="nav-link active" id="system-prompt-tab" data-bs-toggle="tab" data-bs-target="#system-prompt" type="button" role="tab" aria-controls="system-prompt" aria-selected="true">System Prompt</button>
+                                                <button class="nav-link" id="user-prompt-tab" data-bs-toggle="tab" data-bs-target="#user-prompt" type="button" role="tab" aria-controls="user-prompt" aria-selected="false">User Prompt</button>
+                                                <button class="nav-link" id="model-settings-tab" data-bs-toggle="tab" data-bs-target="#model-settings" type="button" role="tab" aria-controls="model-settings" aria-selected="false">Model Settings</button>
+                                            </div>
+                                        </nav>
+                                        <div class="tab-content pt-3" id="prompt-tabContent">
+                                            <!-- System Prompt Tab -->
+                                            <div class="tab-pane fade show active" id="system-prompt" role="tabpanel" aria-labelledby="system-prompt-tab">
+                                                <div class="mb-3">
+                                                    <p class="mb-3">The system prompt defines the role and capabilities of the AI. This sets the context for the entire generation.</p>
+                                                    <textarea class="form-control" id="systemPrompt" name="systemPrompt" rows="10"><%= config.prompts.systemPrompt || 'You are an expert food blogger, culinary SEO specialist, and recipe development expert. Your task is to create comprehensive, data-driven, and easy-to-follow WordPress blog posts about recipes that are engaging, informative, and optimized for search engines.' %></textarea>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- User Prompt Tab -->
+                                            <div class="tab-pane fade" id="user-prompt" role="tabpanel" aria-labelledby="user-prompt-tab">
+                                                <div class="mb-3">
+                                                    <p class="mb-3">The user prompt contains the specific instructions for content generation.</p>
+                                                    <textarea class="form-control" id="userPrompt" name="userPrompt" rows="15"><%= config.prompts.userPrompt || 'Act as a professional food blogger, culinary SEO specialist, and recipe development expert. Create a comprehensive, data-driven, and easy-to-follow WordPress blog post about "[keyword]" that is at least [minWords] words long. Follow the structure and guidelines below strictly, while using engaging language that resonates with home cooks of all skill levels.\n\nBlog Post Title: Create an engaging title that includes "[keyword]"\n\nFollow this structure:\n1. Introduction (H2): Start with an intriguing question about the recipe that challenges common beliefs and incorporate the keyword within the first 100 words.\n2. Ingredients List (H2): Provide a clear list with potential substitutions using sensory descriptions.\n3. Timing (H2): Detail preparation, cooking, and total time with helpful comparisons.\n4. Step-by-Step Instructions (H3 for each step): Clear steps with personalized tips.\n5. Storage and Reheating (H2): Explain best practices with specific timeframes.\n6. Variations (H2): Offer 3-4 creative variations with suggestions for different dietary needs.\n7. FAQ (H2): Answer 4-6 common questions with keyword-rich answers.\n8. Conclusion (H2): Summarize key points and include a call to action.' %></textarea>
+                                                </div>
+                                                
+                                                <!-- Hidden fields to maintain compatibility -->
+                                                <div style="display: none;">
+                                                    <input type="hidden" id="mainPrompt" name="mainPrompt" value="<%= config.prompts.mainPrompt || config.app.contentTemplate || '' %>">
+                                                    <input type="hidden" id="part1Prompt" name="part1Prompt" value="<%= config.prompts.part1Prompt || '' %>">
+                                                    <input type="hidden" id="part2Prompt" name="part2Prompt" value="<%= config.prompts.part2Prompt || '' %>">
+                                                    <input type="hidden" id="part3Prompt" name="part3Prompt" value="<%= config.prompts.part3Prompt || '' %>">
+                                                    <input type="hidden" id="useMultiPartGeneration" name="useMultiPartGeneration" value="false">
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Model Settings Tab -->
+                                            <div class="tab-pane fade" id="model-settings" role="tabpanel" aria-labelledby="model-settings-tab">
+                                                <div class="mb-4">
+                                                    <p>Configure the AI model and generation parameters.</p>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Select AI Model</label>
+                                                        <div class="model-selection d-flex flex-wrap gap-2 mb-3">
+                                                            <button type="button" class="btn btn-model btn-outline-primary" data-model="gpt-4">GPT-4</button>
+                                                            <button type="button" class="btn btn-model btn-outline-primary" data-model="gpt-4o">GPT-4o</button>
+                                                            <button type="button" class="btn btn-model btn-outline-primary" data-model="gpt-3.5-turbo">GPT-3.5-Turbo</button>
+                                                            <button type="button" class="btn btn-model btn-outline-primary" data-model="gpt-4o-mini">GPT-4o-mini</button>
+                                                            <button type="button" class="btn btn-model-custom btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#customModelModal">+ Custom</button>
+                                                        </div>
+                                                        <input type="hidden" id="selectedModel" name="model" value="<%= config.prompts && config.prompts.model ? config.prompts.model : 'gpt-4' %>">
+                                                        <div class="form-text">
+                                                            The model you select will be used for all content generation. Custom models will be saved for future use.
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="temperatureRange" class="form-label">Temperature: <span id="temperatureValue"><%= config.prompts && config.prompts.temperature ? config.prompts.temperature : '0.7' %></span></label>
+                                                        <input type="range" class="form-range" id="temperatureRange" name="temperature" min="0" max="1" step="0.1" value="<%= config.prompts && config.prompts.temperature ? config.prompts.temperature : '0.7' %>">
+                                                        <div class="form-text">
+                                                            Controls randomness: 0 is more focused and deterministic, 1 is more creative and varied.
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Keep maxTokens field in the form, but hide it visually -->
+                                                    <div style="display: none;">
+                                                        <input type="hidden" id="maxTokens" name="maxTokens" value="<%= config.prompts && config.prompts.maxTokens ? config.prompts.maxTokens : '4000' %>">
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info">
+                                                        <i class="bi bi-info-circle"></i> The system will automatically determine the appropriate token limit based on the model selected and your content requirements.
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="form-text">
-                                            When enabled, the system will analyze food-related articles and extract recipe data for the Tasty Recipes plugin.
-                                        </div>
                                     </div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="recipeFormatPrompt" class="form-label">Recipe Format Instructions</label>
-                                        <textarea class="form-control" id="recipeFormatPrompt" name="recipeFormatPrompt" rows="7" 
-                                            placeholder="Instructions for how recipe content should be structured"><%= config.prompts && config.prompts.recipeFormatPrompt ? config.prompts.recipeFormatPrompt : 'Please format this as a recipe article with the following sections:\n1. A brief introduction about the dish\n2. A "Ingredients" section with a clear, bulleted list (<ul><li>) of all ingredients with quantities\n3. A "Instructions" section with numbered steps (<ol><li>) for preparation\n4. Include preparation time, cooking time, and servings information clearly labeled (e.g., "Prep Time: 15 minutes")\n5. Add a "Tips and Notes" section with helpful advice for making this recipe\n6. If relevant, include nutrition information' %></textarea>
-                                        <div class="form-text">
-                                            Instructions on how recipe articles should be structured to ensure proper extraction of ingredients, instructions, and other recipe data.
+                                </div>
+                            </div>
+                            
+                            <!-- SEO Prompts Card -->
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">SEO Metadata Prompts</h5>
+                                        <button class="btn btn-link btn-sm p-0 toggle-card-body" type="button" data-bs-toggle="collapse" data-bs-target="#seoPromptsCollapse" aria-expanded="true">
+                                            <i class="bi bi-dash-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="collapse show" id="seoPromptsCollapse">
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> 
+                                            These prompts are used to generate SEO metadata when Rank Math integration is enabled. Customize how titles, descriptions, and permalinks are created.
+                                        </div>
+                                        
+                                        <!-- Add tabs for SEO Metadata Prompts similar to Article Generation -->
+                                        <nav>
+                                            <div class="nav nav-tabs" id="seo-prompt-tab" role="tablist">
+                                                <button class="nav-link active" id="seo-system-prompt-tab" data-bs-toggle="tab" data-bs-target="#seo-system-prompt" type="button" role="tab" aria-controls="seo-system-prompt" aria-selected="true">System Prompt</button>
+                                                <button class="nav-link" id="seo-user-prompt-tab" data-bs-toggle="tab" data-bs-target="#seo-user-prompt" type="button" role="tab" aria-controls="seo-user-prompt" aria-selected="false">User Prompt</button>
+                                                <button class="nav-link" id="seo-model-settings-tab" data-bs-toggle="tab" data-bs-target="#seo-model-settings" type="button" role="tab" aria-controls="seo-model-settings" aria-selected="false">Model Settings</button>
+                                            </div>
+                                        </nav>
+                                        
+                                        <div class="tab-content pt-3" id="seo-prompt-tabContent">
+                                            <!-- SEO System Prompt Tab -->
+                                            <div class="tab-pane fade show active" id="seo-system-prompt" role="tabpanel" aria-labelledby="seo-system-prompt-tab">
+                                                <div class="mb-3">
+                                                    <p class="mb-3">The system prompt defines the role and capabilities of the AI for SEO metadata generation.</p>
+                                                    <textarea class="form-control" id="seoSystemPrompt" name="seoSystemPrompt" rows="6"><%= config.rankMath && config.rankMath.systemPrompt ? config.rankMath.systemPrompt : 'You are an expert SEO specialist with deep knowledge of metadata optimization. Your task is to create optimized titles, descriptions, and permalinks that drive clicks and improve search engine rankings.' %></textarea>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- SEO User Prompt Tab -->
+                                            <div class="tab-pane fade" id="seo-user-prompt" role="tabpanel" aria-labelledby="seo-user-prompt-tab">
+                                                <div class="mb-3">
+                                                    <label for="seoTitlePrompt" class="form-label">SEO Title Prompt</label>
+                                                    <textarea class="form-control" id="seoTitlePrompt" name="seoTitlePrompt" rows="3"><%= config.rankMath && config.rankMath.titlePrompt ? config.rankMath.titlePrompt : 'Generate 3 SEO-optimized title options for an article about "{keyword}". Each title should be compelling, under 60 characters, include the focus keyword naturally, and encourage clicks. Make each title different in structure and approach.' %></textarea>
+                                                    <div class="form-text">Prompt used to generate SEO titles. Use {keyword} as placeholder.</div>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="seoDescriptionPrompt" class="form-label">SEO Description Prompt</label>
+                                                    <textarea class="form-control" id="seoDescriptionPrompt" name="seoDescriptionPrompt" rows="3"><%= config.rankMath && config.rankMath.descriptionPrompt ? config.rankMath.descriptionPrompt : 'Generate 3 SEO meta descriptions for an article about "{keyword}". Each description should be 150-160 characters, include the focus keyword, summarize the content value, and include a call-to-action. Make each description unique in approach.' %></textarea>
+                                                    <div class="form-text">Prompt used to generate meta descriptions. Use {keyword} as placeholder.</div>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="seoPermalinkPrompt" class="form-label">SEO Permalink Prompt</label>
+                                                    <textarea class="form-control" id="seoPermalinkPrompt" name="seoPermalinkPrompt" rows="3"><%= config.rankMath && config.rankMath.permalinkPrompt ? config.rankMath.permalinkPrompt : 'Generate 3 SEO-friendly URL slugs for an article about "{keyword}". Each slug should be short (3-5 words), include the main keyword, use hyphens between words, avoid stop words, and be all lowercase. Make each slug unique but relevant to the topic.' %></textarea>
+                                                    <div class="form-text">Prompt used to generate permalink slugs. Use {keyword} as placeholder.</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- SEO Model Settings Tab -->
+                                            <div class="tab-pane fade" id="seo-model-settings" role="tabpanel" aria-labelledby="seo-model-settings-tab">
+                                                <div class="mb-4">
+                                                    <p>Configure the AI model and generation parameters.</p>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Select AI Model</label>
+                                                        <div class="seo-model-selection d-flex flex-wrap gap-2 mb-3">
+                                                            <button type="button" class="btn btn-seo-model btn-outline-primary" data-model="gpt-4">GPT-4</button>
+                                                            <button type="button" class="btn btn-seo-model btn-outline-primary" data-model="gpt-4o">GPT-4o</button>
+                                                            <button type="button" class="btn btn-seo-model btn-outline-primary" data-model="gpt-3.5-turbo">GPT-3.5-Turbo</button>
+                                                            <button type="button" class="btn btn-seo-model btn-outline-primary" data-model="gpt-4o-mini">GPT-4o-mini</button>
+                                                            <button type="button" class="btn btn-seo-model-custom btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#seoCustomModelModal">+ Custom</button>
+                                                        </div>
+                                                        <input type="hidden" id="selectedSeoModel" name="seoModelName" value="<%= config.rankMath && config.rankMath.model ? config.rankMath.model : 'gpt-4' %>">
+                                                        <div class="form-text">
+                                                            The model you select will be used for SEO metadata generation. Custom models will be saved for future use.
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="seoModelTemperature" class="form-label">Temperature: <span id="seoTempValue"><%= config.rankMath && config.rankMath.temperature ? config.rankMath.temperature : '0.7' %></span></label>
+                                                        <input type="range" class="form-range" id="seoModelTemperature" name="seoModelTemperature" min="0" max="1" step="0.1" value="<%= config.rankMath && config.rankMath.temperature ? config.rankMath.temperature : '0.7' %>">
+                                                        <div class="d-flex justify-content-between">
+                                                            <small>More Focused (0.0)</small>
+                                                            <small>More Creative (1.0)</small>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info">
+                                                        <i class="bi bi-info-circle"></i> The system will automatically determine the appropriate token limit based on the model selected and your content requirements.
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -238,44 +267,219 @@
     </div>
 </div>
 
+<!-- Custom Model Modal -->
+<div class="modal fade" id="customModelModal" tabindex="-1" aria-labelledby="customModelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customModelModalLabel">Add Custom Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customModelName" class="form-label">Model Name/ID</label>
+                    <input type="text" class="form-control" id="customModelName" placeholder="e.g., gpt-4-turbo-2024-04-09">
+                    <div class="form-text">Enter the exact model ID to use with the OpenAI API.</div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Custom models will be saved in your browser for future use. Make sure to use the exact model ID from OpenAI.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addCustomModelBtn">Add Model</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SEO Custom Model Modal -->
+<div class="modal fade" id="seoCustomModelModal" tabindex="-1" aria-labelledby="seoCustomModelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="seoCustomModelModalLabel">Add Custom SEO Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="seoCustomModelName" class="form-label">Model Name/ID</label>
+                    <input type="text" class="form-control" id="seoCustomModelName" placeholder="e.g., gpt-4-turbo-2024-04-09">
+                    <div class="form-text">Enter the exact model ID to use with the OpenAI API.</div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Custom models will be saved in your browser for future use. Make sure to use the exact model ID from OpenAI.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addSeoCustomModelBtn">Add Model</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle between single part and multi-part sections
-        const useMultiPartGeneration = document.getElementById('useMultiPartGeneration');
-        const singlePromptSection = document.getElementById('single-prompt-section');
-        const multiPartSection = document.getElementById('multi-part-section');
+        // Temperature slider value display
+        const temperatureRange = document.getElementById('temperatureRange');
+        const temperatureValue = document.getElementById('temperatureValue');
         
-        useMultiPartGeneration.addEventListener('change', function() {
-            if (this.checked) {
-                singlePromptSection.classList.add('d-none');
-                multiPartSection.classList.remove('d-none');
-            } else {
-                singlePromptSection.classList.remove('d-none');
-                multiPartSection.classList.add('d-none');
-            }
+        temperatureRange.addEventListener('input', function() {
+            temperatureValue.textContent = this.value;
         });
         
-        // Handle recipe detection toggle
-        document.getElementById('enableRecipeDetection').addEventListener('change', function() {
-            const recipeFormatPrompt = document.getElementById('recipeFormatPrompt');
-            
-            if (!this.checked) {
-                // Disable related fields if recipe detection is turned off
-                recipeFormatPrompt.disabled = true;
-            } else {
-                // Enable related fields when recipe detection is on
-                recipeFormatPrompt.disabled = false;
-            }
-        });
+        // SEO Temperature slider value display
+        const seoTemperatureRange = document.getElementById('seoModelTemperature');
+        const seoTempValue = document.getElementById('seoTempValue');
         
-        // Initial state based on checkbox
-        const enableRecipeDetection = document.getElementById('enableRecipeDetection');
-        if (enableRecipeDetection) {
-            const isEnabled = enableRecipeDetection.checked;
-            const recipeFormatPrompt = document.getElementById('recipeFormatPrompt');
-            
-            if (recipeFormatPrompt) recipeFormatPrompt.disabled = !isEnabled;
+        if (seoTemperatureRange && seoTempValue) {
+            seoTemperatureRange.addEventListener('input', function() {
+                seoTempValue.textContent = this.value;
+            });
         }
+        
+        // Model selection handling
+        const modelButtons = document.querySelectorAll('.btn-model');
+        const selectedModelInput = document.getElementById('selectedModel');
+        
+        modelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                modelButtons.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                
+                // Add active class to clicked button
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                // Update hidden input value
+                selectedModelInput.value = this.getAttribute('data-model');
+            });
+        });
+        
+        // SEO Model selection handling
+        const seoModelButtons = document.querySelectorAll('.btn-seo-model');
+        const selectedSeoModelInput = document.getElementById('selectedSeoModel');
+        
+        seoModelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                seoModelButtons.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                
+                // Add active class to clicked button
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                // Update hidden input value
+                selectedSeoModelInput.value = this.getAttribute('data-model');
+            });
+        });
+        
+        // Add custom model
+        document.getElementById('addCustomModelBtn').addEventListener('click', function() {
+            const customModelName = document.getElementById('customModelName').value.trim();
+            
+            if (customModelName) {
+                // Create new button for the custom model
+                const modelSelection = document.querySelector('.model-selection');
+                const customBtn = document.createElement('button');
+                customBtn.type = 'button';
+                customBtn.className = 'btn btn-model btn-outline-primary';
+                customBtn.setAttribute('data-model', customModelName);
+                customBtn.textContent = customModelName;
+                
+                // Insert before the "+ Custom" button
+                modelSelection.insertBefore(customBtn, document.querySelector('.btn-model-custom'));
+                
+                // Add event listener to the new button
+                customBtn.addEventListener('click', function() {
+                    modelButtons.forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                    
+                    selectedModelInput.value = this.getAttribute('data-model');
+                });
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('customModelModal'));
+                modal.hide();
+                
+                // Clear input
+                document.getElementById('customModelName').value = '';
+                
+                // Save to localStorage
+                saveCustomModelToStorage(customModelName);
+            }
+        });
+        
+        // Add SEO custom model
+        document.getElementById('addSeoCustomModelBtn').addEventListener('click', function() {
+            const seoCustomModelName = document.getElementById('seoCustomModelName').value.trim();
+            
+            if (seoCustomModelName) {
+                // Create new button for the SEO custom model
+                const seoModelSelection = document.querySelector('.seo-model-selection');
+                const seoCustomBtn = document.createElement('button');
+                seoCustomBtn.type = 'button';
+                seoCustomBtn.className = 'btn btn-seo-model btn-outline-primary';
+                seoCustomBtn.setAttribute('data-model', seoCustomModelName);
+                seoCustomBtn.textContent = seoCustomModelName;
+                
+                // Insert before the "+ Custom" button
+                seoModelSelection.insertBefore(seoCustomBtn, document.querySelector('.btn-seo-model-custom'));
+                
+                // Add event listener to the new button
+                seoCustomBtn.addEventListener('click', function() {
+                    seoModelButtons.forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                    
+                    selectedSeoModelInput.value = this.getAttribute('data-model');
+                });
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('seoCustomModelModal'));
+                modal.hide();
+                
+                // Clear input
+                document.getElementById('seoCustomModelName').value = '';
+                
+                // Save to localStorage
+                saveSeoCustomModelToStorage(seoCustomModelName);
+            }
+        });
+        
+        // Toggle card body collapse
+        const toggleButtons = document.querySelectorAll('.toggle-card-body');
+        
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('bi-dash-lg')) {
+                    icon.classList.remove('bi-dash-lg');
+                    icon.classList.add('bi-plus-lg');
+                } else {
+                    icon.classList.remove('bi-plus-lg');
+                    icon.classList.add('bi-dash-lg');
+                }
+            });
+        });
         
         // Form submission
         document.getElementById('prompt-settings-form').addEventListener('submit', function(e) {
@@ -283,20 +487,33 @@
             
             // Collect form data
             const formData = {
-                useMultiPartGeneration: document.getElementById('useMultiPartGeneration').checked,
+                useMultiPartGeneration: false, // Always false now
+                // System, user prompts and model settings
+                systemPrompt: document.getElementById('systemPrompt').value,
+                userPrompt: document.getElementById('userPrompt').value,
+                model: document.getElementById('selectedModel').value,
+                temperature: document.getElementById('temperatureRange').value,
+                maxTokens: document.getElementById('maxTokens').value,
+                // Single and multi-part prompts (hidden fields)
                 mainPrompt: document.getElementById('mainPrompt').value,
                 part1Prompt: document.getElementById('part1Prompt').value,
                 part2Prompt: document.getElementById('part2Prompt').value,
                 part3Prompt: document.getElementById('part3Prompt').value,
-                toneVoice: document.getElementById('toneVoice').value,
-                seoGuidelines: document.getElementById('seoGuidelines').value,
-                thingsToAvoid: document.getElementById('thingsToAvoid').value,
-                // Article format fields
-                articleFormat: document.getElementById('articleFormat').value,
-                useArticleFormat: document.getElementById('useArticleFormat').checked,
-                // Recipe detection settings
-                enableRecipeDetection: document.getElementById('enableRecipeDetection').checked,
-                recipeFormatPrompt: document.getElementById('recipeFormatPrompt').value
+                // SEO prompts
+                seoSystemPrompt: document.getElementById('seoSystemPrompt').value,
+                seoTitlePrompt: document.getElementById('seoTitlePrompt').value,
+                seoDescriptionPrompt: document.getElementById('seoDescriptionPrompt').value,
+                seoPermalinkPrompt: document.getElementById('seoPermalinkPrompt').value,
+                seoModelTemperature: document.getElementById('seoModelTemperature').value,
+                seoModelName: document.getElementById('selectedSeoModel').value,
+                // Keep these properties but set to empty strings to avoid backend errors
+                toneVoice: "",
+                seoGuidelines: "",
+                thingsToAvoid: "",
+                articleFormat: "",
+                useArticleFormat: false,
+                enableRecipeDetection: false,
+                recipeFormatPrompt: ""
             };
             
             // Save prompt settings
@@ -346,20 +563,33 @@
             
             // Collect current prompt settings
             const promptSettings = {
-                useMultiPartGeneration: document.getElementById('useMultiPartGeneration').checked,
+                useMultiPartGeneration: false, // Always false now
+                // System, user prompts and model settings
+                systemPrompt: document.getElementById('systemPrompt').value,
+                userPrompt: document.getElementById('userPrompt').value,
+                model: document.getElementById('selectedModel').value,
+                temperature: document.getElementById('temperatureRange').value,
+                maxTokens: document.getElementById('maxTokens').value,
+                // Single and multi-part prompts (hidden fields)
                 mainPrompt: document.getElementById('mainPrompt').value,
                 part1Prompt: document.getElementById('part1Prompt').value,
                 part2Prompt: document.getElementById('part2Prompt').value,
                 part3Prompt: document.getElementById('part3Prompt').value,
-                toneVoice: document.getElementById('toneVoice').value,
-                seoGuidelines: document.getElementById('seoGuidelines').value,
-                thingsToAvoid: document.getElementById('thingsToAvoid').value,
-                // Article format fields
-                articleFormat: document.getElementById('articleFormat').value,
-                useArticleFormat: document.getElementById('useArticleFormat').checked,
-                // Recipe detection settings
-                enableRecipeDetection: document.getElementById('enableRecipeDetection').checked,
-                recipeFormatPrompt: document.getElementById('recipeFormatPrompt').value
+                // SEO prompts
+                seoSystemPrompt: document.getElementById('seoSystemPrompt').value,
+                seoTitlePrompt: document.getElementById('seoTitlePrompt').value,
+                seoDescriptionPrompt: document.getElementById('seoDescriptionPrompt').value,
+                seoPermalinkPrompt: document.getElementById('seoPermalinkPrompt').value,
+                seoModelTemperature: document.getElementById('seoModelTemperature').value,
+                seoModelName: document.getElementById('selectedSeoModel').value,
+                // Keep these empty but include them to avoid backend errors
+                toneVoice: "",
+                seoGuidelines: "",
+                thingsToAvoid: "",
+                articleFormat: "",
+                useArticleFormat: false,
+                enableRecipeDetection: false,
+                recipeFormatPrompt: ""
             };
             
             // Call API to test generation
@@ -394,81 +624,160 @@
             });
         });
         
-        // Handle format presets
-        document.getElementById('formatPresets').addEventListener('change', function() {
-            const formatField = document.getElementById('articleFormat');
-            const useFormatCheckbox = document.getElementById('useArticleFormat');
-            const presetValue = this.value;
-            
-            if (presetValue) {
-                // Enable the format checkbox when a preset is selected
-                useFormatCheckbox.checked = true;
+        // Function to save custom model to localStorage
+        function saveCustomModelToStorage(modelName) {
+            if (window.localStorage) {
+                // Get existing models
+                let customModels = [];
+                const savedModels = localStorage.getItem('customModels');
+                if (savedModels) {
+                    try {
+                        customModels = JSON.parse(savedModels);
+                    } catch (e) {
+                        console.error('Error parsing saved models:', e);
+                        customModels = [];
+                    }
+                }
                 
-                // Set the content based on the selected preset
-                switch (presetValue) {
-                    case 'blog':
-                        formatField.value = `Create a blog post with the following structure:
-1. Start with an engaging introduction (2-3 paragraphs)
-2. Include 3-5 main sections with H2 headings
-3. Each section should have 2-4 paragraphs
-4. Use relevant subheadings (H3) where appropriate
-5. Include a bullet list of key points in at least one section
-6. End with a conclusion that summarizes the main points
-7. Add a call-to-action in the final paragraph`;
-                        break;
-                        
-                    case 'recipe':
-                        formatField.value = `Create a recipe article with the following structure:
-1. Begin with a brief story or introduction about the dish (2 paragraphs)
-2. Include a "Why You'll Love This Recipe" section with 4-5 bullet points
-3. Add a "Ingredients" section with a clear, bulleted list of all ingredients with quantities
-4. Create a "Instructions" section with numbered steps
-5. Include a "Tips for Success" section with 3-5 useful tips
-6. Add a "Variations" section suggesting modifications or alternatives
-7. End with a "Storage Instructions" section
-8. Conclude with a brief summary paragraph`;
-                        break;
-                        
-                    case 'howto':
-                        formatField.value = `Create a detailed how-to guide with the following structure:
-1. Introduction explaining what the guide will teach and why it's valuable (2 paragraphs)
-2. "What You'll Need" section listing all required tools, materials, or resources
-3. "Preparation" section if applicable
-4. Step-by-step instructions, with each major step as an H2 heading
-   - Break down complex steps into bullet points or numbered sub-steps
-   - Include specific details, measurements, or timing information
-5. "Troubleshooting" section addressing common problems and solutions
-6. "Tips and Tricks" section with expert advice
-7. Conclusion summarizing the process and expected results`;
-                        break;
-                        
-                    case 'listicle':
-                        formatField.value = `Create a list-based article with the following structure:
-1. Introduction explaining the topic and why these items/points are important (2 paragraphs)
-2. List of items, with each item as an H2 heading (number each heading: "1. First Item", etc.)
-3. Each item should include:
-   - 2-3 paragraphs of description/explanation
-   - At least one specific example, statistic, or quote if applicable
-   - A key takeaway or actionable tip
-4. Conclusion that summarizes the list and provides final thoughts
-5. Use numbered subheadings throughout the article`;
-                        break;
-                        
-                    case 'review':
-                        formatField.value = `Create a product review article with the following structure:
-1. Introduction to the product and what it claims to do (2 paragraphs)
-2. "Specifications" section with key product details in a bullet list
-3. "Pros" section with bullet points highlighting the strengths
-4. "Cons" section with bullet points noting the weaknesses
-5. "Performance" section with detailed analysis (2-3 paragraphs)
-6. "Comparison" section that briefly compares it to alternatives
-7. "Value for Money" section assessing if it's worth the price
-8. "Verdict" section with final rating and recommendation
-9. Include a clear numerical or star rating`;
-                        break;
+                // Add new model if not already present
+                if (!customModels.includes(modelName)) {
+                    customModels.push(modelName);
+                    localStorage.setItem('customModels', JSON.stringify(customModels));
                 }
             }
-        });
+        }
+        
+        // Function to save SEO custom model to localStorage
+        function saveSeoCustomModelToStorage(modelName) {
+            if (window.localStorage) {
+                // Get existing SEO models
+                let seoCustomModels = [];
+                const savedSeoModels = localStorage.getItem('seoCustomModels');
+                if (savedSeoModels) {
+                    try {
+                        seoCustomModels = JSON.parse(savedSeoModels);
+                    } catch (e) {
+                        console.error('Error parsing saved SEO models:', e);
+                        seoCustomModels = [];
+                    }
+                }
+                
+                // Add new model if not already present
+                if (!seoCustomModels.includes(modelName)) {
+                    seoCustomModels.push(modelName);
+                    localStorage.setItem('seoCustomModels', JSON.stringify(seoCustomModels));
+                }
+            }
+        }
+        
+        // Function to load custom models from localStorage
+        function loadCustomModels() {
+            if (window.localStorage) {
+                // Load main custom models
+                const savedModels = localStorage.getItem('customModels');
+                if (savedModels) {
+                    try {
+                        const customModels = JSON.parse(savedModels);
+                        
+                        // Add each custom model as a button
+                        customModels.forEach(modelName => {
+                            // Only add if it doesn't already exist
+                            if (!document.querySelector(`.btn-model[data-model="${modelName}"]`)) {
+                                const modelSelection = document.querySelector('.model-selection');
+                                const customBtnTrigger = document.querySelector('.btn-model-custom');
+                                
+                                if (modelSelection && customBtnTrigger) {
+                                    const customBtn = document.createElement('button');
+                                    customBtn.type = 'button';
+                                    customBtn.className = 'btn btn-model btn-outline-primary';
+                                    customBtn.setAttribute('data-model', modelName);
+                                    customBtn.textContent = modelName;
+                                    
+                                    // Add event listener to the new button
+                                    customBtn.addEventListener('click', function() {
+                                        const modelButtons = document.querySelectorAll('.btn-model');
+                                        modelButtons.forEach(btn => {
+                                            btn.classList.remove('btn-primary');
+                                            btn.classList.add('btn-outline-primary');
+                                        });
+                                        
+                                        this.classList.remove('btn-outline-primary');
+                                        this.classList.add('btn-primary');
+                                        
+                                        document.getElementById('selectedModel').value = this.getAttribute('data-model');
+                                    });
+                                    
+                                    // Insert before the "+ Custom" button
+                                    modelSelection.insertBefore(customBtn, customBtnTrigger);
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error loading custom models:', e);
+                    }
+                }
+                
+                // Load SEO custom models
+                const savedSeoModels = localStorage.getItem('seoCustomModels');
+                if (savedSeoModels) {
+                    try {
+                        const seoCustomModels = JSON.parse(savedSeoModels);
+                        
+                        // Add each SEO custom model as a button
+                        seoCustomModels.forEach(modelName => {
+                            // Only add if it doesn't already exist
+                            if (!document.querySelector(`.btn-seo-model[data-model="${modelName}"]`)) {
+                                const seoModelSelection = document.querySelector('.seo-model-selection');
+                                const seoCustomBtnTrigger = document.querySelector('.btn-seo-model-custom');
+                                
+                                if (seoModelSelection && seoCustomBtnTrigger) {
+                                    const seoCustomBtn = document.createElement('button');
+                                    seoCustomBtn.type = 'button';
+                                    seoCustomBtn.className = 'btn btn-seo-model btn-outline-primary';
+                                    seoCustomBtn.setAttribute('data-model', modelName);
+                                    seoCustomBtn.textContent = modelName;
+                                    
+                                    // Add event listener to the new button
+                                    seoCustomBtn.addEventListener('click', function() {
+                                        const seoModelButtons = document.querySelectorAll('.btn-seo-model');
+                                        seoModelButtons.forEach(btn => {
+                                            btn.classList.remove('btn-primary');
+                                            btn.classList.add('btn-outline-primary');
+                                        });
+                                        
+                                        this.classList.remove('btn-outline-primary');
+                                        this.classList.add('btn-primary');
+                                        
+                                        document.getElementById('selectedSeoModel').value = this.getAttribute('data-model');
+                                    });
+                                    
+                                    // Insert before the "+ Custom" button
+                                    seoModelSelection.insertBefore(seoCustomBtn, seoCustomBtnTrigger);
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error loading SEO custom models:', e);
+                    }
+                }
+            }
+        }
+        
+        // Load custom models on page load
+        loadCustomModels();
+        
+        // Set initial active model buttons based on hidden input values
+        const initialModelValue = document.getElementById('selectedModel').value;
+        const initialModelButton = document.querySelector(`.btn-model[data-model="${initialModelValue}"]`);
+        if (initialModelButton) {
+            initialModelButton.click();
+        }
+        
+        const initialSeoModelValue = document.getElementById('selectedSeoModel').value;
+        const initialSeoModelButton = document.querySelector(`.btn-seo-model[data-model="${initialSeoModelValue}"]`);
+        if (initialSeoModelButton) {
+            initialSeoModelButton.click();
+        }
         
         // Function to show alerts
         function showAlert(message, type = 'info') {
@@ -501,6 +810,31 @@
             }, 5000);
         }
     });
+
+    // Validate model name function
+    function validateModelName(modelName) {
+        // Valid OpenAI models
+        const VALID_MODELS = [
+            'gpt-4', 'gpt-4o', 'gpt-3.5-turbo', 'gpt-4o-mini', 'gpt-4-32k',
+            'gpt-4-turbo', 'gpt-4-turbo-preview', 'gpt-4-vision-preview', 'gpt-4-1106-preview',
+            'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13',
+            'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-instruct'
+        ];
+        
+        // Check if the model is in our list
+        if (VALID_MODELS.includes(modelName)) {
+            return true;
+        }
+        
+        // Check if it matches common patterns
+        const patterns = [
+            /^gpt-[34](\.\d+)?(-turbo)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+            /^gpt-4o(-mini)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+            /^ft:.*$/  // Fine-tuned models
+        ];
+        
+        return patterns.some(pattern => pattern.test(modelName));
+    }
 </script>
 
 <%- include('partials/footer') %>
