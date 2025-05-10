@@ -2900,58 +2900,182 @@ app.post('/api/test-rank-math', isAuthenticated, isAdmin, async (req, res) => {
 // API endpoint to save prompt settings with model validation
 // API endpoint to save prompt settings with model validation
 // In server.js, update the /api/save-prompt-settings endpoint
+// API endpoint to save prompt settings with error handling for missing organization
 app.post('/api/save-prompt-settings', isAuthenticated, async (req, res) => {
   try {
-    // Get all the setting values from the request
-    const {
-      // Existing settings
-      useMultiPartGeneration, systemPrompt, userPrompt, model, temperature, maxTokens,
-      mainPrompt, part1Prompt, part2Prompt, part3Prompt,
-      // SEO settings
-      seoSystemPrompt, seoTitlePrompt, seoDescriptionPrompt, seoPermalinkPrompt,
-      seoModelTemperature, seoModelName
-    } = req.body;
+    console.log('Received prompt settings save request');
     
-    // Create updated config
-    const orgConfig = {
-      ...req.orgConfig,
-      prompts: {
-        ...req.orgConfig.prompts,
-        // Existing settings
-        useMultiPartGeneration: useMultiPartGeneration === true,
-        systemPrompt: systemPrompt || '',
-        userPrompt: userPrompt || '',
-        model: model || 'gpt-4',
-        temperature: parseFloat(temperature) || 0.7,
-        maxTokens: parseInt(maxTokens || '4000'),
-        mainPrompt: mainPrompt || '',
-        part1Prompt: part1Prompt || '',
-        part2Prompt: part2Prompt || '',
-        part3Prompt: part3Prompt || '',
-      },
-      // Update Rank Math settings to include new fields
-      rankMath: {
-        ...req.orgConfig.rankMath,
-        systemPrompt: seoSystemPrompt || '',
-        titlePrompt: seoTitlePrompt || '',
-        descriptionPrompt: seoDescriptionPrompt || '',
-        permalinkPrompt: seoPermalinkPrompt || '',
-        temperature: parseFloat(seoModelTemperature) || 0.7,
-        model: seoModelName || 'gpt-4',
-        enabled: req.orgConfig.rankMath ? req.orgConfig.rankMath.enabled : false,
-        optionsCount: req.orgConfig.rankMath ? req.orgConfig.rankMath.optionsCount : 3
+    // Check if organization is available
+    if (!req.organization) {
+      console.error('Organization object is missing in the request');
+      return res.status(400).json({
+        success: false,
+        error: 'Organization data is not available. Please try logging out and logging back in.'
+      });
+    }
+    
+    // Check if configFile is defined
+    if (!req.organization.configFile) {
+      console.error('Organization configFile is missing', req.organization);
+      
+      // Try to get the organization ID and construct a default config filename
+      let configFileName;
+      if (req.organization.id) {
+        configFileName = `config-${req.organization.id}.json`;
+        console.log('Created default config filename based on organization ID:', configFileName);
+      } else if (req.session && req.session.user && req.session.user.organizationId) {
+        configFileName = `config-${req.session.user.organizationId}.json`;
+        console.log('Created default config filename based on session user organization ID:', configFileName);
+      } else {
+        // Fallback to the default config file
+        configFileName = 'config.json';
+        console.log('Using default config.json file as fallback');
       }
-    };
+      
+      // Set the configFile property
+      req.organization.configFile = configFileName;
+    }
     
-    // Save the updated config
-    const configPath = path.join(__dirname, '../data', req.organization.configFile);
-    await fs.writeFile(configPath, JSON.stringify(orgConfig, null, 2));
+    console.log('Using config file:', req.organization.configFile);
     
-    req.flash('success', 'Prompt settings saved successfully');
-    res.json({ success: true, message: 'Prompt settings saved successfully' });
+    // Valid OpenAI models as of May 2025
+    const VALID_MODELS = [
+      // GPT-4 series
+      'gpt-4', 'gpt-4-32k', 'gpt-4-turbo', 'gpt-4-turbo-preview', 'gpt-4-1106-preview',
+      'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4-vision-preview',
+      
+      // GPT-4o series
+      'gpt-4o', 'gpt-4o-mini', 'gpt-4o-2024-05-13',
+      
+      // GPT-3.5 series
+      'gpt-3.5-turbo', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-instruct'
+    ];
+
+    // Regular expressions for validating custom model names
+    const VALID_MODEL_PATTERNS = [
+      /^gpt-[34](\.\d+)?(-turbo)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+      /^gpt-4o(-mini)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+      /^ft:.*$/  // Fine-tuned models
+    ];
+
+    // Function to validate model names
+    function validateModelName(modelName) {
+      // Check against our hardcoded list first
+      if (VALID_MODELS.includes(modelName)) {
+        return true;
+      }
+      
+      // Check against valid patterns for custom/newer models
+      return VALID_MODEL_PATTERNS.some(pattern => pattern.test(modelName));
+    }
+    
+    // Get the selected models and validate them
+    const selectedModel = req.body.model ? String(req.body.model) : 'gpt-4';
+    const selectedSeoModel = req.body.seoModelName ? String(req.body.seoModelName) : 'gpt-4';
+    
+    console.log('Selected models:', selectedModel, selectedSeoModel);
+    
+    // Validate model names
+    if (!validateModelName(selectedModel)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid model name: ${selectedModel}. Please select a valid OpenAI model.`
+      });
+    }
+    
+    if (!validateModelName(selectedSeoModel)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid SEO model name: ${selectedSeoModel}. Please select a valid OpenAI model.`
+      });
+    }
+    
+    // Update prompts section with new settings
+    let orgConfig;
+    
+    try {
+      // First try to load the existing config
+      const configPath = path.join(__dirname, '../data', req.organization.configFile);
+      
+      try {
+        const existingConfig = await fs.readFile(configPath, 'utf8');
+        orgConfig = JSON.parse(existingConfig);
+        console.log('Successfully loaded existing config');
+      } catch (readError) {
+        // If file doesn't exist or can't be parsed, create a new config
+        console.warn('Error reading existing config, creating new one:', readError.message);
+        orgConfig = { ...req.orgConfig } || {}; // Use existing config or create empty object
+      }
+      
+      // Update the config with new values
+      orgConfig.prompts = {
+        ...(orgConfig.prompts || {}),
+        // System and user prompts
+        systemPrompt: req.body.systemPrompt || '',
+        userPrompt: req.body.userPrompt || '',
+        
+        // Model settings
+        model: selectedModel,
+        temperature: parseFloat(req.body.temperature) || 0.7,
+        maxTokens: parseInt(req.body.maxTokens || '4000'),
+        
+        // Keep other settings
+        useMultiPartGeneration: req.body.useMultiPartGeneration === true,
+        mainPrompt: req.body.mainPrompt || '',
+        part1Prompt: req.body.part1Prompt || '',
+        part2Prompt: req.body.part2Prompt || '',
+        part3Prompt: req.body.part3Prompt || '',
+        toneVoice: req.body.toneVoice || '',
+        seoGuidelines: req.body.seoGuidelines || '',
+        thingsToAvoid: req.body.thingsToAvoid || '',
+        articleFormat: req.body.articleFormat || '',
+        useArticleFormat: req.body.useArticleFormat === true,
+        enableRecipeDetection: req.body.enableRecipeDetection === true,
+        recipeFormatPrompt: req.body.recipeFormatPrompt || ''
+      };
+      
+      // Update or create the rankMath section
+      orgConfig.rankMath = {
+        ...(orgConfig.rankMath || {}),
+        systemPrompt: req.body.seoSystemPrompt || '',
+        titlePrompt: req.body.seoTitlePrompt || '',
+        descriptionPrompt: req.body.seoDescriptionPrompt || '',
+        permalinkPrompt: req.body.seoPermalinkPrompt || '',
+        temperature: parseFloat(req.body.seoModelTemperature) || 0.7,
+        model: selectedSeoModel,
+        enabled: orgConfig.rankMath ? orgConfig.rankMath.enabled : false,
+        optionsCount: orgConfig.rankMath ? orgConfig.rankMath.optionsCount : 3
+      };
+      
+      // Ensure all needed directories exist
+      await fs.mkdir(path.join(__dirname, '../data'), { recursive: true });
+      
+      // Save updated config
+      await fs.writeFile(configPath, JSON.stringify(orgConfig, null, 2));
+      
+      console.log('Successfully saved prompt settings config to:', configPath);
+      
+      return res.json({ 
+        success: true, 
+        message: 'Prompt settings saved successfully',
+        models: {
+          main: selectedModel,
+          seo: selectedSeoModel
+        }
+      });
+    } catch (error) {
+      console.error('Error in save-prompt-settings:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
   } catch (error) {
-    console.error('Error saving prompt settings:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Unhandled error in save-prompt-settings:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'An unknown error occurred'
+    });
   }
 });
 
