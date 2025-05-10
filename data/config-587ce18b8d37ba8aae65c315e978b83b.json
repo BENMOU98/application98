@@ -1,0 +1,8 @@
+{
+  "prompts": {
+    "model": "gpt-4o-mini"
+  },
+  "rankMath": {
+    "model": "gpt-4o-mini"
+  }
+}

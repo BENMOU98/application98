@@ -30,12 +30,12 @@
     "articleFormat": "",
     "useArticleFormat": false,
     "enableRecipeDetection": false,
-    "recipeFormatPrompt": "Please format this as a recipe article with the following sections:\n1. A brief introduction about the dish\n2. A \"Ingredients\" section with a clear, bulleted list (<ul><li>) of all ingredients with quantities\n3. A \"Instructions\" section with numbered steps (<ol><li>) for preparation\n4. Include preparation time, cooking time, and servings information clearly labeled (e.g., \"Prep Time: 15 minutes\")\n5. Add a \"Tips and Notes\" section with helpful advice for making this recipe\n6. If relevant, include nutrition information",
+    "recipeFormatPrompt": "",
     "useCustomRecipePrompt": false,
     "recipePromptTemplate": "Generate a complete recipe related to \"{keyword}\".\nFormat the response as a structured JSON object with the following fields:\n{\n  \"title\": \"Recipe title\",\n  \"description\": \"Brief description of the dish\",\n  \"ingredients\": [\"ingredient 1\", \"ingredient 2\", ...],\n  \"instructions\": [\"step 1\", \"step 2\", ...],\n  \"prep_time\": \"XX mins\",\n  \"cook_time\": \"XX mins\",\n  \"yield\": \"X servings\",\n  \"notes\": [\"note 1\", \"note 2\", ...],\n  \"nutrition_info\": {\n    \"Calories\": \"XXX kcal\",\n    \"Protein\": \"XXg\",\n    \"Carbs\": \"XXg\",\n    \"Fat\": \"XXg\"\n  },\n  \"cuisine\": [\"Italian\", \"Mediterranean\"],\n  \"course\": [\"Main Dish\", \"Dinner\"],\n  \"difficulty\": \"Medium\",\n  \"dietary\": [\"Vegetarian\", \"Gluten-Free\"],\n  \"keywords\": [\"pasta\", \"quick\", \"easy\"]\n}",
     "systemPrompt": "You are an expert food blogger, culinary SEO specialist, and recipe development expert. Your task is to create comprehensive, data-driven, and easy-to-follow WordPress blog posts about recipes that are engaging, informative, and optimized for search engines.",
     "userPrompt": "Act as a professional food blogger, culinary SEO specialist, and recipe development expert. Create a comprehensive, data-driven, and easy-to-follow WordPress blog post about \"[keyword]\" that is at least [minWords] words long. Follow the structure and guidelines below strictly, while using engaging language that resonates with home cooks of all skill levels.\n\nBlog Post Title: Create an engaging title that includes \"[keyword]\"\n\nFollow this structure:\n1. Introduction (H2): Start with an intriguing question about the recipe that challenges common beliefs and incorporate the keyword within the first 100 words.\n2. Ingredients List (H2): Provide a clear list with potential substitutions using sensory descriptions.\n3. Timing (H2): Detail preparation, cooking, and total time with helpful comparisons.\n4. Step-by-Step Instructions (H3 for each step): Clear steps with personalized tips.\n5. Storage and Reheating (H2): Explain best practices with specific timeframes.\n6. Variations (H2): Offer 3-4 creative variations with suggestions for different dietary needs.\n7. FAQ (H2): Answer 4-6 common questions with keyword-rich answers.\n8. Conclusion (H2): Summarize key points and include a call to action.",
-    "model": "gpt-4o-mini-2024-07-18",
+    "model": "gpt-4o-mini",
     "temperature": 0.7,
     "maxTokens": 4000
   },
@@ -72,7 +72,7 @@
     "descriptionPrompt": "Generate 3 SEO meta descriptions for an article about \"{keyword}\". Each description should be 150-160 characters, include the focus keyword, summarize the content value, and include a call-to-action. Make each description unique in approach.",
     "permalinkPrompt": "Generate 3 SEO-friendly URL slugs for an article about \"{keyword}\". Each slug should be short (3-5 words), include the main keyword, use hyphens between words, avoid stop words, and be all lowercase. Make each slug unique but relevant to the topic.",
     "temperature": 0.7,
-    "model": "gpt-4o-mini-2024-07-18",
+    "model": "gpt-4o-mini",
     "enabled": false,
     "optionsCount": 3
   }

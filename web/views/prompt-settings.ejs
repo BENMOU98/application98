@@ -322,6 +322,40 @@
 </div>
 
 <script>
+
+    // Add to prompt-settings.ejs - in the DOMContentLoaded event at the top
+function debugConfigLoading() {
+  console.log('Debug: Checking model values on page load');
+  console.log('Main model input value:', document.getElementById('selectedModel').value);
+  console.log('SEO model input value:', document.getElementById('selectedSeoModel').value);
+  
+  // Create debug info on the page
+  const debugDiv = document.createElement('div');
+  debugDiv.className = 'alert alert-info mt-4';
+  debugDiv.innerHTML = `
+    <h5>Debug Info</h5>
+    <p><strong>Main Model:</strong> ${document.getElementById('selectedModel').value}</p>
+    <p><strong>SEO Model:</strong> ${document.getElementById('selectedSeoModel').value}</p>
+    <button class="btn btn-sm btn-secondary" id="debugRefreshBtn">Refresh Config</button>
+  `;
+  
+  document.querySelector('.card-body').appendChild(debugDiv);
+  
+  // Add a refresh button handler
+  document.getElementById('debugRefreshBtn').addEventListener('click', function() {
+    fetch('/api/get-config-debug')
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data, null, 2));
+      })
+      .catch(error => {
+        alert('Error getting config: ' + error.message);
+      });
+  });
+}
+
+// Call this function at the end of your DOMContentLoaded event
+debugConfigLoading();
     document.addEventListener('DOMContentLoaded', function() {
         // Temperature slider value display
         const temperatureRange = document.getElementById('temperatureRange');
@@ -902,6 +936,51 @@
         // Call init function after DOM loaded
         init();
     });
+    // Function to directly save just the model selections
+  function saveModelSelectionsDirectly() {
+    const mainModel = document.getElementById('selectedModel').value;
+    const seoModel = document.getElementById('selectedSeoModel').value;
+    
+    console.log('Saving models directly:', { mainModel, seoModel });
+    
+    fetch('/api/save-models', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify({
+        mainModel,
+        seoModel
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Models saved successfully! Main: ' + mainModel + ', SEO: ' + seoModel);
+      } else {
+        alert('Failed to save models: ' + data.error);
+      }
+    })
+    .catch(error => {
+      alert('Error saving models: ' + error.message);
+    });
+  }
+
+  // Add a test button to the page that saves just the models
+  document.addEventListener('DOMContentLoaded', function() {
+    const formActions = document.querySelector('.d-flex.justify-content-end.mt-3');
+    
+    if (formActions) {
+      const testButton = document.createElement('button');
+      testButton.type = 'button';
+      testButton.className = 'btn btn-info me-2';
+      testButton.innerHTML = '<i class="bi bi-save"></i> Save Models Only';
+      testButton.onclick = saveModelSelectionsDirectly;
+      
+      formActions.prepend(testButton);
+    }
+  });
 </script>
 
 <%- include('partials/footer') %>

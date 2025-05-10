@@ -3157,3 +3157,130 @@ app.post('/api/test-prompt-generation', isAuthenticated, async (req, res) => {
     });
   }
 });
+
+// Special endpoint just for saving model selections
+app.post('/api/save-models', isAuthenticated, async (req, res) => {
+  try {
+    const { mainModel, seoModel } = req.body;
+    
+    console.log('Saving models:', { mainModel, seoModel });
+    
+    if (!mainModel || !seoModel) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both main model and SEO model are required'
+      });
+    }
+    
+    // Get organization ID
+    const organizationId = req.session.user.organizationId;
+    if (!organizationId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User has no organization ID'
+      });
+    }
+    
+    // Determine config file path
+    const dataDir = path.join(__dirname, '../data');
+    const configFile = `config-${organizationId}.json`;
+    const configPath = path.join(dataDir, configFile);
+    
+    let config = {};
+    
+    // Try to read existing config
+    try {
+      const configData = await fs.readFile(configPath, 'utf8');
+      config = JSON.parse(configData);
+    } catch (err) {
+      console.warn('Could not read config file, creating new one');
+      // Create new config object
+      config = { prompts: {}, rankMath: {} };
+    }
+    
+    // Update the models
+    if (!config.prompts) config.prompts = {};
+    if (!config.rankMath) config.rankMath = {};
+    
+    config.prompts.model = mainModel;
+    config.rankMath.model = seoModel;
+    
+    // Save the updated config
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf8');
+    
+    // Make sure the config file was written
+    try {
+      const savedConfig = await fs.readFile(configPath, 'utf8');
+      const parsedConfig = JSON.parse(savedConfig);
+      
+      console.log('Saved config:', {
+        mainModel: parsedConfig.prompts?.model,
+        seoModel: parsedConfig.rankMath?.model
+      });
+    } catch (err) {
+      console.error('Error reading saved config:', err);
+    }
+    
+    return res.json({
+      success: true,
+      message: 'Models saved successfully',
+      models: { main: mainModel, seo: seoModel }
+    });
+  } catch (error) {
+    console.error('Error saving models:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+// Add to server.js
+app.get('/api/get-config-debug', isAuthenticated, async (req, res) => {
+  try {
+    // Get organization ID
+    const organizationId = req.session.user.organizationId;
+    if (!organizationId) {
+      return res.json({
+        success: false,
+        error: 'No organization ID',
+        session: req.session.user
+      });
+    }
+    
+    // Determine config file path
+    const dataDir = path.join(__dirname, '../data');
+    const configFile = `config-${organizationId}.json`;
+    const configPath = path.join(dataDir, configFile);
+    
+    try {
+      const configData = await fs.readFile(configPath, 'utf8');
+      const config = JSON.parse(configData);
+      
+      return res.json({
+        success: true,
+        configPath,
+        prompts: {
+          model: config.prompts?.model
+        },
+        rankMath: {
+          model: config.rankMath?.model
+        },
+        user: {
+          id: req.session.user.id,
+          organizationId: req.session.user.organizationId
+        }
+      });
+    } catch (err) {
+      return res.json({
+        success: false,
+        error: `Error reading config: ${err.message}`,
+        configPath
+      });
+    }
+  } catch (error) {
+    return res.json({
+      success: false,
+      error: `Unhandled error: ${error.message}`
+    });
+  }
+});
