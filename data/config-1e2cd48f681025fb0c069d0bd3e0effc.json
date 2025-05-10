@@ -72,7 +72,7 @@
     "descriptionPrompt": "Generate 3 SEO meta descriptions for an article about \"{keyword}\". Each description should be 150-160 characters, include the focus keyword, summarize the content value, and include a call-to-action. Make each description unique in approach.",
     "permalinkPrompt": "Generate 3 SEO-friendly URL slugs for an article about \"{keyword}\". Each slug should be short (3-5 words), include the main keyword, use hyphens between words, avoid stop words, and be all lowercase. Make each slug unique but relevant to the topic.",
     "temperature": 0.7,
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-4o-mini",
     "enabled": false,
     "optionsCount": 3
   }
