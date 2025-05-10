@@ -132,6 +132,16 @@
       "role": "admin",
       "createdAt": "2025-04-22T23:29:25.911Z",
       "organizationId": "23c6a4b2acc803dfc3a0b01416c2f15a"
+    },
+    {
+      "id": "6e81a6ecf17baa2b0718f6f0e6ae6ddb",
+      "username": "dubai",
+      "password": "aa3d2fe4f6d301dbd6b8fb2d2fddfb7aeebf3bec53ffff4b39a0967afa88c609",
+      "name": "dubai",
+      "email": "dubai@gmail.com",
+      "role": "admin",
+      "createdAt": "2025-05-10T10:19:46.677Z",
+      "organizationId": "1958f83e1892aa0b3159b96521fdb5e0"
     }
   ]
 }
