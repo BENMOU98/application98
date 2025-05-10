@@ -322,6 +322,30 @@
 </div>
 
 <script>
+    // Add at the top of your script section
+function checkInitialValues() {
+  // Get the values from the hidden inputs
+  const initialMainModel = document.getElementById('selectedModel').value;
+  const initialSeoModel = document.getElementById('selectedSeoModel').value;
+  
+  // Log them
+  console.log('Initial hidden input values:', {
+    main: initialMainModel,
+    seo: initialSeoModel
+  });
+  
+  // Check if specific models are preselected
+  document.querySelectorAll('.btn-model').forEach(btn => {
+    console.log(`Main model button: ${btn.getAttribute('data-model')} - Class: ${btn.className}`);
+  });
+  
+  document.querySelectorAll('.btn-seo-model').forEach(btn => {
+    console.log(`SEO model button: ${btn.getAttribute('data-model')} - Class: ${btn.className}`);
+  });
+}
+
+// Call this at the beginning of your DOMContentLoaded handler
+checkInitialValues();
 
     // Add to prompt-settings.ejs - in the DOMContentLoaded event at the top
 function debugConfigLoading() {
