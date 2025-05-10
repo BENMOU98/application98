@@ -341,129 +341,297 @@
             });
         }
         
-        // Model selection handling
-        const modelButtons = document.querySelectorAll('.btn-model');
-        const selectedModelInput = document.getElementById('selectedModel');
+        // Main article model selection
+        function setupModelSelection() {
+            const modelButtons = document.querySelectorAll('.btn-model');
+            const selectedModelInput = document.getElementById('selectedModel');
+            
+            // Function to select a model button
+            function selectModelButton(modelName) {
+                modelButtons.forEach(btn => {
+                    if (btn.getAttribute('data-model') === modelName) {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary');
+                        selectedModelInput.value = modelName;
+                    } else {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    }
+                });
+            }
+            
+            // Add click handlers to all model buttons
+            modelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modelName = this.getAttribute('data-model');
+                    selectModelButton(modelName);
+                });
+            });
+            
+            // Initialize selected model
+            const initialModel = selectedModelInput.value || 'gpt-4';
+            let modelExists = false;
+            
+            modelButtons.forEach(btn => {
+                if (btn.getAttribute('data-model') === initialModel) {
+                    modelExists = true;
+                }
+            });
+            
+            if (!modelExists && validateModelName(initialModel)) {
+                // Create custom model button for the selected model
+                createCustomModelButton(initialModel);
+            }
+            
+            // Select the model
+            selectModelButton(initialModel);
+            
+            // Custom model handling
+            document.getElementById('addCustomModelBtn').addEventListener('click', function() {
+                const customModelName = document.getElementById('customModelName').value.trim();
+                
+                if (customModelName && validateModelName(customModelName)) {
+                    createCustomModelButton(customModelName);
+                    selectModelButton(customModelName);
+                    
+                    // Save to localStorage
+                    saveCustomModel(customModelName);
+                    
+                    // Clear the input and close the modal
+                    document.getElementById('customModelName').value = '';
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('customModelModal'));
+                    if (modal) modal.hide();
+                } else if (customModelName) {
+                    showAlert('Invalid model name format. Please check and try again.', 'warning');
+                }
+            });
+        }
         
-        modelButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
+        // Create a custom model button
+        function createCustomModelButton(modelName) {
+            if (!modelName) return;
+            
+            // Check if this button already exists
+            if (document.querySelector(`.btn-model[data-model="${modelName}"]`)) {
+                return;
+            }
+            
+            const modelSelection = document.querySelector('.model-selection');
+            const customButtonTrigger = document.querySelector('.btn-model-custom');
+            
+            if (!modelSelection || !customButtonTrigger) return;
+            
+            const newButton = document.createElement('button');
+            newButton.type = 'button';
+            newButton.className = 'btn btn-model btn-outline-primary';
+            newButton.setAttribute('data-model', modelName);
+            newButton.textContent = modelName;
+            
+            // Add click handler
+            newButton.addEventListener('click', function() {
+                const modelButtons = document.querySelectorAll('.btn-model');
                 modelButtons.forEach(btn => {
                     btn.classList.remove('btn-primary');
                     btn.classList.add('btn-outline-primary');
                 });
                 
-                // Add active class to clicked button
                 this.classList.remove('btn-outline-primary');
                 this.classList.add('btn-primary');
                 
-                // Update hidden input value
-                selectedModelInput.value = this.getAttribute('data-model');
+                document.getElementById('selectedModel').value = modelName;
             });
-        });
+            
+            modelSelection.insertBefore(newButton, customButtonTrigger);
+            return newButton;
+        }
         
-        // SEO Model selection handling
-        const seoModelButtons = document.querySelectorAll('.btn-seo-model');
-        const selectedSeoModelInput = document.getElementById('selectedSeoModel');
+        // Save custom model to localStorage
+        function saveCustomModel(modelName) {
+            if (!modelName || !window.localStorage) return;
+            
+            let customModels = [];
+            try {
+                const savedModels = localStorage.getItem('customModels');
+                if (savedModels) {
+                    customModels = JSON.parse(savedModels);
+                }
+            } catch (e) {
+                console.error('Error parsing saved models:', e);
+                customModels = [];
+            }
+            
+            if (!customModels.includes(modelName)) {
+                customModels.push(modelName);
+                localStorage.setItem('customModels', JSON.stringify(customModels));
+            }
+        }
         
-        seoModelButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
+        // Load custom models from localStorage
+        function loadCustomModels() {
+            if (!window.localStorage) return;
+            
+            try {
+                const savedModels = localStorage.getItem('customModels');
+                if (savedModels) {
+                    const customModels = JSON.parse(savedModels);
+                    
+                    // Create buttons for each custom model
+                    customModels.forEach(modelName => {
+                        if (validateModelName(modelName)) {
+                            createCustomModelButton(modelName);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error loading custom models:', e);
+            }
+        }
+        
+        // SEO model selection
+        function setupSeoModelSelection() {
+            const seoModelButtons = document.querySelectorAll('.btn-seo-model');
+            const selectedSeoModelInput = document.getElementById('selectedSeoModel');
+            
+            // Function to select a SEO model button
+            function selectSeoModelButton(modelName) {
+                seoModelButtons.forEach(btn => {
+                    if (btn.getAttribute('data-model') === modelName) {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary');
+                        selectedSeoModelInput.value = modelName;
+                    } else {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    }
+                });
+            }
+            
+            // Add click handlers to all SEO model buttons
+            seoModelButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modelName = this.getAttribute('data-model');
+                    selectSeoModelButton(modelName);
+                });
+            });
+            
+            // Initialize selected SEO model
+            const initialSeoModel = selectedSeoModelInput.value || 'gpt-4';
+            let seoModelExists = false;
+            
+            seoModelButtons.forEach(btn => {
+                if (btn.getAttribute('data-model') === initialSeoModel) {
+                    seoModelExists = true;
+                }
+            });
+            
+            if (!seoModelExists && validateModelName(initialSeoModel)) {
+                // Create custom SEO model button for the selected model
+                createSeoCustomModelButton(initialSeoModel);
+            }
+            
+            // Select the SEO model
+            selectSeoModelButton(initialSeoModel);
+            
+            // SEO Custom model handling
+            document.getElementById('addSeoCustomModelBtn').addEventListener('click', function() {
+                const seoCustomModelName = document.getElementById('seoCustomModelName').value.trim();
+                
+                if (seoCustomModelName && validateModelName(seoCustomModelName)) {
+                    createSeoCustomModelButton(seoCustomModelName);
+                    selectSeoModelButton(seoCustomModelName);
+                    
+                    // Save to localStorage
+                    saveSeoCustomModel(seoCustomModelName);
+                    
+                    // Clear the input and close the modal
+                    document.getElementById('seoCustomModelName').value = '';
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('seoCustomModelModal'));
+                    if (modal) modal.hide();
+                } else if (seoCustomModelName) {
+                    showAlert('Invalid model name format. Please check and try again.', 'warning');
+                }
+            });
+        }
+        
+        // Create a SEO custom model button
+        function createSeoCustomModelButton(modelName) {
+            if (!modelName) return;
+            
+            // Check if this button already exists
+            if (document.querySelector(`.btn-seo-model[data-model="${modelName}"]`)) {
+                return;
+            }
+            
+            const seoModelSelection = document.querySelector('.seo-model-selection');
+            const seoCustomButtonTrigger = document.querySelector('.btn-seo-model-custom');
+            
+            if (!seoModelSelection || !seoCustomButtonTrigger) return;
+            
+            const newButton = document.createElement('button');
+            newButton.type = 'button';
+            newButton.className = 'btn btn-seo-model btn-outline-primary';
+            newButton.setAttribute('data-model', modelName);
+            newButton.textContent = modelName;
+            
+            // Add click handler
+            newButton.addEventListener('click', function() {
+                const seoModelButtons = document.querySelectorAll('.btn-seo-model');
                 seoModelButtons.forEach(btn => {
                     btn.classList.remove('btn-primary');
                     btn.classList.add('btn-outline-primary');
                 });
                 
-                // Add active class to clicked button
                 this.classList.remove('btn-outline-primary');
                 this.classList.add('btn-primary');
                 
-                // Update hidden input value
-                selectedSeoModelInput.value = this.getAttribute('data-model');
+                document.getElementById('selectedSeoModel').value = modelName;
             });
-        });
-        
-        // Add custom model
-        document.getElementById('addCustomModelBtn').addEventListener('click', function() {
-            const customModelName = document.getElementById('customModelName').value.trim();
             
-            if (customModelName) {
-                // Create new button for the custom model
-                const modelSelection = document.querySelector('.model-selection');
-                const customBtn = document.createElement('button');
-                customBtn.type = 'button';
-                customBtn.className = 'btn btn-model btn-outline-primary';
-                customBtn.setAttribute('data-model', customModelName);
-                customBtn.textContent = customModelName;
-                
-                // Insert before the "+ Custom" button
-                modelSelection.insertBefore(customBtn, document.querySelector('.btn-model-custom'));
-                
-                // Add event listener to the new button
-                customBtn.addEventListener('click', function() {
-                    modelButtons.forEach(btn => {
-                        btn.classList.remove('btn-primary');
-                        btn.classList.add('btn-outline-primary');
-                    });
-                    
-                    this.classList.remove('btn-outline-primary');
-                    this.classList.add('btn-primary');
-                    
-                    selectedModelInput.value = this.getAttribute('data-model');
-                });
-                
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('customModelModal'));
-                modal.hide();
-                
-                // Clear input
-                document.getElementById('customModelName').value = '';
-                
-                // Save to localStorage
-                saveCustomModelToStorage(customModelName);
-            }
-        });
+            seoModelSelection.insertBefore(newButton, seoCustomButtonTrigger);
+            return newButton;
+        }
         
-        // Add SEO custom model
-        document.getElementById('addSeoCustomModelBtn').addEventListener('click', function() {
-            const seoCustomModelName = document.getElementById('seoCustomModelName').value.trim();
+        // Save SEO custom model to localStorage
+        function saveSeoCustomModel(modelName) {
+            if (!modelName || !window.localStorage) return;
             
-            if (seoCustomModelName) {
-                // Create new button for the SEO custom model
-                const seoModelSelection = document.querySelector('.seo-model-selection');
-                const seoCustomBtn = document.createElement('button');
-                seoCustomBtn.type = 'button';
-                seoCustomBtn.className = 'btn btn-seo-model btn-outline-primary';
-                seoCustomBtn.setAttribute('data-model', seoCustomModelName);
-                seoCustomBtn.textContent = seoCustomModelName;
-                
-                // Insert before the "+ Custom" button
-                seoModelSelection.insertBefore(seoCustomBtn, document.querySelector('.btn-seo-model-custom'));
-                
-                // Add event listener to the new button
-                seoCustomBtn.addEventListener('click', function() {
-                    seoModelButtons.forEach(btn => {
-                        btn.classList.remove('btn-primary');
-                        btn.classList.add('btn-outline-primary');
-                    });
-                    
-                    this.classList.remove('btn-outline-primary');
-                    this.classList.add('btn-primary');
-                    
-                    selectedSeoModelInput.value = this.getAttribute('data-model');
-                });
-                
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('seoCustomModelModal'));
-                modal.hide();
-                
-                // Clear input
-                document.getElementById('seoCustomModelName').value = '';
-                
-                // Save to localStorage
-                saveSeoCustomModelToStorage(seoCustomModelName);
+            let seoCustomModels = [];
+            try {
+                const savedSeoModels = localStorage.getItem('seoCustomModels');
+                if (savedSeoModels) {
+                    seoCustomModels = JSON.parse(savedSeoModels);
+                }
+            } catch (e) {
+                console.error('Error parsing saved SEO models:', e);
+                seoCustomModels = [];
             }
-        });
+            
+            if (!seoCustomModels.includes(modelName)) {
+                seoCustomModels.push(modelName);
+                localStorage.setItem('seoCustomModels', JSON.stringify(seoCustomModels));
+            }
+        }
+        
+        // Load SEO custom models from localStorage
+        function loadSeoCustomModels() {
+            if (!window.localStorage) return;
+            
+            try {
+                const savedSeoModels = localStorage.getItem('seoCustomModels');
+                if (savedSeoModels) {
+                    const seoCustomModels = JSON.parse(savedSeoModels);
+                    
+                    // Create buttons for each SEO custom model
+                    seoCustomModels.forEach(modelName => {
+                        if (validateModelName(modelName)) {
+                            createSeoCustomModelButton(modelName);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error loading SEO custom models:', e);
+            }
+        }
         
         // Toggle card body collapse
         const toggleButtons = document.querySelectorAll('.toggle-card-body');
@@ -624,161 +792,6 @@
             });
         });
         
-        // Function to save custom model to localStorage
-        function saveCustomModelToStorage(modelName) {
-            if (window.localStorage) {
-                // Get existing models
-                let customModels = [];
-                const savedModels = localStorage.getItem('customModels');
-                if (savedModels) {
-                    try {
-                        customModels = JSON.parse(savedModels);
-                    } catch (e) {
-                        console.error('Error parsing saved models:', e);
-                        customModels = [];
-                    }
-                }
-                
-                // Add new model if not already present
-                if (!customModels.includes(modelName)) {
-                    customModels.push(modelName);
-                    localStorage.setItem('customModels', JSON.stringify(customModels));
-                }
-            }
-        }
-        
-        // Function to save SEO custom model to localStorage
-        function saveSeoCustomModelToStorage(modelName) {
-            if (window.localStorage) {
-                // Get existing SEO models
-                let seoCustomModels = [];
-                const savedSeoModels = localStorage.getItem('seoCustomModels');
-                if (savedSeoModels) {
-                    try {
-                        seoCustomModels = JSON.parse(savedSeoModels);
-                    } catch (e) {
-                        console.error('Error parsing saved SEO models:', e);
-                        seoCustomModels = [];
-                    }
-                }
-                
-                // Add new model if not already present
-                if (!seoCustomModels.includes(modelName)) {
-                    seoCustomModels.push(modelName);
-                    localStorage.setItem('seoCustomModels', JSON.stringify(seoCustomModels));
-                }
-            }
-        }
-        
-        // Function to load custom models from localStorage
-        function loadCustomModels() {
-            if (window.localStorage) {
-                // Load main custom models
-                const savedModels = localStorage.getItem('customModels');
-                if (savedModels) {
-                    try {
-                        const customModels = JSON.parse(savedModels);
-                        
-                        // Add each custom model as a button
-                        customModels.forEach(modelName => {
-                            // Only add if it doesn't already exist
-                            if (!document.querySelector(`.btn-model[data-model="${modelName}"]`)) {
-                                const modelSelection = document.querySelector('.model-selection');
-                                const customBtnTrigger = document.querySelector('.btn-model-custom');
-                                
-                                if (modelSelection && customBtnTrigger) {
-                                    const customBtn = document.createElement('button');
-                                    customBtn.type = 'button';
-                                    customBtn.className = 'btn btn-model btn-outline-primary';
-                                    customBtn.setAttribute('data-model', modelName);
-                                    customBtn.textContent = modelName;
-                                    
-                                    // Add event listener to the new button
-                                    customBtn.addEventListener('click', function() {
-                                        const modelButtons = document.querySelectorAll('.btn-model');
-                                        modelButtons.forEach(btn => {
-                                            btn.classList.remove('btn-primary');
-                                            btn.classList.add('btn-outline-primary');
-                                        });
-                                        
-                                        this.classList.remove('btn-outline-primary');
-                                        this.classList.add('btn-primary');
-                                        
-                                        document.getElementById('selectedModel').value = this.getAttribute('data-model');
-                                    });
-                                    
-                                    // Insert before the "+ Custom" button
-                                    modelSelection.insertBefore(customBtn, customBtnTrigger);
-                                }
-                            }
-                        });
-                    } catch (e) {
-                        console.error('Error loading custom models:', e);
-                    }
-                }
-                
-                // Load SEO custom models
-                const savedSeoModels = localStorage.getItem('seoCustomModels');
-                if (savedSeoModels) {
-                    try {
-                        const seoCustomModels = JSON.parse(savedSeoModels);
-                        
-                        // Add each SEO custom model as a button
-                        seoCustomModels.forEach(modelName => {
-                            // Only add if it doesn't already exist
-                            if (!document.querySelector(`.btn-seo-model[data-model="${modelName}"]`)) {
-                                const seoModelSelection = document.querySelector('.seo-model-selection');
-                                const seoCustomBtnTrigger = document.querySelector('.btn-seo-model-custom');
-                                
-                                if (seoModelSelection && seoCustomBtnTrigger) {
-                                    const seoCustomBtn = document.createElement('button');
-                                    seoCustomBtn.type = 'button';
-                                    seoCustomBtn.className = 'btn btn-seo-model btn-outline-primary';
-                                    seoCustomBtn.setAttribute('data-model', modelName);
-                                    seoCustomBtn.textContent = modelName;
-                                    
-                                    // Add event listener to the new button
-                                    seoCustomBtn.addEventListener('click', function() {
-                                        const seoModelButtons = document.querySelectorAll('.btn-seo-model');
-                                        seoModelButtons.forEach(btn => {
-                                            btn.classList.remove('btn-primary');
-                                            btn.classList.add('btn-outline-primary');
-                                        });
-                                        
-                                        this.classList.remove('btn-outline-primary');
-                                        this.classList.add('btn-primary');
-                                        
-                                        document.getElementById('selectedSeoModel').value = this.getAttribute('data-model');
-                                    });
-                                    
-                                    // Insert before the "+ Custom" button
-                                    seoModelSelection.insertBefore(seoCustomBtn, seoCustomBtnTrigger);
-                                }
-                            }
-                        });
-                    } catch (e) {
-                        console.error('Error loading SEO custom models:', e);
-                    }
-                }
-            }
-        }
-        
-        // Load custom models on page load
-        loadCustomModels();
-        
-        // Set initial active model buttons based on hidden input values
-        const initialModelValue = document.getElementById('selectedModel').value;
-        const initialModelButton = document.querySelector(`.btn-model[data-model="${initialModelValue}"]`);
-        if (initialModelButton) {
-            initialModelButton.click();
-        }
-        
-        const initialSeoModelValue = document.getElementById('selectedSeoModel').value;
-        const initialSeoModelButton = document.querySelector(`.btn-seo-model[data-model="${initialSeoModelValue}"]`);
-        if (initialSeoModelButton) {
-            initialSeoModelButton.click();
-        }
-        
         // Function to show alerts
         function showAlert(message, type = 'info') {
             // Create alert container if it doesn't exist
@@ -809,32 +822,38 @@
                 }, 300);
             }, 5000);
         }
-    });
-
-    // Validate model name function
-    function validateModelName(modelName) {
-        // Valid OpenAI models
-        const VALID_MODELS = [
-            'gpt-4', 'gpt-4o', 'gpt-3.5-turbo', 'gpt-4o-mini', 'gpt-4-32k',
-            'gpt-4-turbo', 'gpt-4-turbo-preview', 'gpt-4-vision-preview', 'gpt-4-1106-preview',
-            'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13',
-            'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-instruct'
-        ];
         
-        // Check if the model is in our list
-        if (VALID_MODELS.includes(modelName)) {
-            return true;
+        // Validate model name function
+        function validateModelName(modelName) {
+            // Valid OpenAI models
+            const validModels = [
+                'gpt-4', 'gpt-4o', 'gpt-3.5-turbo', 'gpt-4o-mini', 'gpt-4-32k',
+                'gpt-4-turbo', 'gpt-4-turbo-preview', 'gpt-4-vision-preview', 'gpt-4-1106-preview',
+                'gpt-4-0125-preview', 'gpt-4-turbo-2024-04-09', 'gpt-4o-2024-05-13',
+                'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-instruct'
+            ];
+            
+            // Check if the model is in our list
+            if (validModels.includes(modelName)) {
+                return true;
+            }
+            
+            // Check if it matches common patterns
+            const patterns = [
+                /^gpt-[34](\.\d+)?(-turbo)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+                /^gpt-4o(-mini)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
+                /^ft:.*$/  // Fine-tuned models
+            ];
+            
+            return patterns.some(pattern => pattern.test(modelName));
         }
         
-        // Check if it matches common patterns
-        const patterns = [
-            /^gpt-[34](\.\d+)?(-turbo)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
-            /^gpt-4o(-mini)?(-\d{4}-\d{2}-\d{2})?(-preview)?$/,
-            /^ft:.*$/  // Fine-tuned models
-        ];
-        
-        return patterns.some(pattern => pattern.test(modelName));
-    }
+        // Initialize components
+        loadCustomModels();
+        loadSeoCustomModels();
+        setupModelSelection();
+        setupSeoModelSelection();
+    });
 </script>
 
 <%- include('partials/footer') %>
